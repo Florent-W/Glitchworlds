@@ -1,0 +1,434 @@
+ul.navbar-nav .dropdown:hover .dropdown-menu {
+    display: block;
+    /* Permet d'ouvrir la liste déroulante juste en pointant un bouton */
+    margin-top: 0;
+    /* Corrige le problème d'espacement entre la liste et le bouton qui ferme la liste */
+}
+
+ul.navbar-nav .dropdown-menu a.dropdown-item:hover {
+    background: transparent;
+    /* Rend le background transparent dans la liste déroulante quand un élément est pointé et met de la couleur sur le texte */
+    color: #0F59E9;
+}
+
+a.nav-link {
+    color: white !important;
+    /* Change la couleur du texte des nav link */
+}
+
+ul.navbar-nav .dropdown-menu {
+    background-color: #343a40 !important;
+    /* Remplace la couleur de fond des listes déroulantes dans l'entête */
+}
+
+
+.form-inline input {
+    /* Pour que le bouton recherche dans la barre de navigation soit à côté du input recherche */
+    display: inline-block;
+    width: 100px;
+}
+
+.dropdown-menu>.dropdown-item {
+    background: transparent;
+    /* Laisse le background par défaut des nav link */
+    color: white;
+    /* Change la couleur du texte des éléments de la liste déroulante */
+}
+
+.ui-autocomplete {
+    /* Pour que les input de recherche ait bien l'autocompletion */
+    max-height: 410px;
+    overflow-y: auto;
+    /* Pour qu'il n'y ait pas de scrollbar horizontal */
+    overflow-x: hidden;
+}
+
+.ui-menu-item div:hover {
+    /* Pour ajouter une bordure sur un résultat */
+    border: 3px solid;
+}
+
+ * html .ui-autocomplete {
+/* Pour que les input de recherche ait bien l'autocompletion sur internet explorer */
+height: 410px;
+}
+
+.carousel .carousel-indicators li {
+    background-color: #fff;
+    background-color: rgba(70, 70, 70, 0.25);
+    /* Changer la couleur des indicateurs des carousels */
+}
+
+.carousel .carousel-indicators .active {
+    background-color: #444;
+    /* Change la couleur des indicateurs des carousels actifs */
+}
+
+.carousel a {
+    color: white;
+    /* Change la couleur des liens */
+}
+
+.carousel a:hover {
+    color: #0F59E9;
+    /* Change la couleur des liens */
+}
+
+.rgba-gradient {
+    /* Permet de bien appliquer le fond d'écran */
+    background: -moz-linear-gradient(45deg, rgba(42, 27, 161, 0.7), rgba(29, 210, 177, 0.7) 100%);
+    background: -webkit-linear-gradient(45deg, rgba(42, 27, 161, 0.7), rgba(29, 210, 177, 0.7) 100%);
+    background: -o-linear-gradient(45deg, rgba(42, 27, 161, 0.7), rgba(29, 210, 177, 0.7) 100%);
+    background: linear-gradient(to 45deg, rgba(42, 27, 161, 0.7), rgba(29, 210, 177, 0.7) 100%);
+}
+
+.selecticone, .selecticone option { /* Permet de charger les icones de font awesome dans un select */
+    font-family: 'Arial', 'Font Awesome 5 Pro';
+    font-weight: 510;
+}
+
+/*
+.groupement-news {
+    /* CSS du container des news */
+/* }
+*/
+
+.container-news, .container-bordure {
+    /* Style des news */
+    margin: 30px;
+    /* Augmente la marge */
+    box-shadow: 0 0 0 0.5vh black;
+    /* Dessine les contours autour d'une news */
+    border-radius: 15px;
+    /* Arrondi les angles de la bordure du rectangle */    
+}
+
+.contenu-news::first-letter, .contenu-jeu::first-letter { 
+    /* Design de la premiere lettre */
+    font-size: 2.3em;
+    color : blue;
+}
+
+.fa-chevron-left, .fa-chevron-right { /* Pour mettre un fond derriere les boutons precedent et suivant */
+    background-color: grey;
+    border-radius: 60px;
+    box-shadow: 0px 0px 2px #888;
+    padding: 0.5em 0.6em;}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    justify-content: space-between;
+    /* Va permettre de fixer le pied de la page */
+}
+
+/* Pour la gallerie d'image */
+.lg-backdrop.in {
+    opacity: 0.85 !important;
+}
+.lg-outer .lg-inner {
+  background-color: transparent;
+}
+.lg-outer .lg-sub-html {
+  position: absolute;
+  text-align: left;
+}
+.lg-outer .lg-toolbar {
+  background-color: transparent;
+  height: 0;
+}
+.lg-outer .lg-toolbar .lg-icon {
+  color: #FFF;
+}
+.lg-outer .lg-img-wrap {
+  padding: 12px;
+}
+
+@media (max-width: 576px) { 
+    /* Reduire la taille */
+    .img-profil, .img-news {
+        box-shadow: 0 0 0 0.5vh black;
+        height: 14vh !important;
+        width: 11vh !important;
+    }
+
+    .texte-pseudo {
+        font-size: 2vh;
+    }
+
+    .texte-titre {
+        font-size: 5vh !important;
+    }
+
+    .texte-date {
+        font-size: 2vh !important;
+    }
+
+    .video-commentaire {
+        box-shadow: 0 0 0 0.5vh black;
+        height: 26vh !important;
+        width: 38vh !important;
+        object-fit: fill !important;
+    }
+
+    .label-form {
+        /* font-size: 0.9em;*/
+    }
+
+    .form-select { /* Reduit taille select */
+        width: 8em !important;
+    }
+
+    .btn-outline-success {
+        margin-left: 1vh !important;
+    }
+
+    .form-inline button {
+        width: 16.8vh !important;
+        /* Pour que le bouton est de la marge */
+        margin-left: 5vh;
+    }
+
+    .form-inline .btn-header {
+        width: 20vh !important;
+        /* Pour que le bouton recherche dans la barre de navigation soit à côté du input recherche */
+        margin-left: 5vh;
+    }
+
+    .form-recherche input, .form-recherche button, .form-recherche select, .form-index input, .form-index button {
+        margin-left: 0.5vh;
+        /* Pour que les inputs recherche soit à côté */
+    }
+ }
+@media (max-width: 1200px) {
+    .liste-news {
+        /* Corrige la marge sur mobile */
+        margin-right: -15px;
+    }
+} 
+
+@media (min-width: 577px){
+    .img-profil {
+        width: 150px; 
+        height: 200px;
+    }
+
+    .form-recherche input, .form-recherche button, .form-recherche select, .form-index input, .form-index button {
+        margin: 0.5vh;
+        /* Pour que les inputs recherche soit à côté */
+    }
+
+}
+
+
+.background {
+    /* background */
+    background-image: url('background.jpg');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center center;
+    overflow-x: hidden;
+}
+
+.list-group-item {
+    overflow: hidden; /* Va permettre de cacher les éléments */
+    text-overflow: clip; /* Permet d'enlever du texte si le texte n'a pas pu etre affiché */
+    white-space: normal; /* Permet de formater le texte */
+}
+
+.liste-derniers-jeux {
+    /* Style de la zone ou sont présents les derniers jeux */
+    margin-top: 200px;
+    margin-right: 50px;
+    /* Augmente la marge */
+    box-shadow: 0 0 0 0.5vh black;
+    overflow: hidden;
+    /* Permet de cacher certaines parties qui dépasse */
+    /* Dessine les contours autour d'une news */
+    border-radius: 15px;
+    /* Arrondi les angles de la bordure du rectangle */
+}
+
+.liste-item-news, .liste-item-bordure {
+    /* Style de chaque news présente dans le groupe de news */
+    margin-top: 40px;
+    /* Augmente la marge */
+    box-shadow: 0 0 0 0.5vh black;
+    /* Dessine les contours autour d'une news */
+    border-radius: 15px;
+    /* Arrondi les angles de la bordure du rectangle */
+}
+
+.liste-item-news-similaire {
+    /* Style de chaque news présente dans le groupe de news */
+    margin-top: 10px;
+    /* Augmente la marge */
+    box-shadow: 0 0 0 0.5vh black;
+    /* Dessine les contours autour d'une news */
+    border-radius: 15px;
+    /* Arrondi les angles de la bordure du rectangle */
+}
+
+.liste-item-commentaire, .liste-item-sans-bordure {
+    /* Style de chaque commentaire présente dans le groupe de commentaire */
+    box-shadow: 0 0 0 0.5vh black;
+    /* Dessine les contours autour d'un commentaire */
+}
+
+.liste-item-news:last-child,
+.liste-item-news:first-child,
+.liste-item-bordure:last-child,
+.liste-item-bordure:first-child {
+    /* Style de chaque news présente dans le groupe de news */
+    margin-top: 40px !important;
+    /* Augmente la marge */
+    box-shadow: 0 0 0 0.5vh black;
+    /* Dessine les contours autour d'une news */
+    border-radius: 15px !important;
+    /* Arrondi les angles de la bordure du rectangle */
+}
+
+.liste-item-news-similaire:last-child,
+.liste-item-news-similaire:first-child {
+    /* Style de chaque news présente dans le groupe de news */
+    margin-top: 10px !important;
+    /* Augmente la marge */
+    box-shadow: 0 0 0 0.5vh black;
+    /* Dessine les contours autour d'une news */
+    border-radius: 15px !important;
+    /* Arrondi les angles de la bordure du rectangle */
+}
+
+.liste-item-commentaire:last-child,
+.liste-item-commentaire:first-child,
+.liste-item-sans-bordure:last-child,
+.liste-item-sans-bordure:first-child {
+    /* Style de chaque commentaire présente dans le groupe de commentaire */
+    box-shadow: 0 0 0 0.5vh black;
+    /* Dessine les contours autour d'une news */
+}
+
+.liste-item-news:hover, .liste-derniers-jeux a:hover, .liste-item-bordure, .liste-item-sans-bordure:hover {
+    /* Style de chaque news présente dans le groupe de news où le curseur passe */
+    background-color: lightblue;
+    /* Change la couleur du background */
+}
+
+.cadre {
+/* Cadre d'info */
+margin-top: 10px !important;
+margin-bottom: 10px !important;
+/* Augmente la marge */
+width: 50%; /* Diminue la taille du cadre */
+margin : 0 auto; /* Permet au cadre milieu */
+overflow-x: hidden; /* Permet au texte de ne pas dépasser */
+box-shadow: 0 0 0 0.25vh black;
+/* Dessine les contours */
+}
+
+.carousel-view {
+    margin: 0.8vh;
+    /* Augmente la marge */
+    /* Contour du background du carousel */
+    box-shadow: 0 0 0 0.9vh black;
+    /* Dessine les contours autour d'un carousel */
+}
+
+.animated {
+    /* Animation */
+    -webkit-animation-duration: 1s;
+    animation-duration: 1s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+}
+
+@keyframes fadeInLeft {
+    /* Fais la transition en se déplaçant de gauche vers la droite */
+    from {
+        opacity: 0;
+        -webkit-transform: translate3d(-100%, 0, 0);
+        transform: translate3d(-100%, 0, 0)
+    }
+    to {
+        opacity: 1;
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0)
+    }
+}
+
+.fadeInLeft {
+    /* Quand l'animation de transition vient de la gauche */
+    -webkit-animation-name: fadeInLeft;
+    /* Permet l'animation */
+    animation-name: fadeInLeft;
+}
+
+@keyframes fadeInRight {
+    /* Fais la transition en se déplaçant de droite vers la gauche */
+    from {
+        opacity: 0;
+        -webkit-transform: translate3d(100%, 0, 0);
+        transform: translate3d(100%, 0, 0)
+    }
+    to {
+        opacity: 1;
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0)
+    }
+}
+
+.fadeInRight {
+    /* Quand l'animation de transition vient de la droite */
+    -webkit-animation-name: fadeInRight;
+    /* Permet l'animation */
+    animation-name: fadeInRight;
+}
+
+.pagination-circle .numero-page {
+    margin-right: 0.25em;
+    /* Ecart entre les boutons des pages */
+    margin-left: 0.25em;
+    border-radius: 50%;
+    /* Numero page en pagination cercle */
+}
+
+.pagination-circle .changement-page:first-child {
+    margin-right: 0.25em;
+    /* Ecart entre les boutons des pages */
+    margin-left: 0.25em;
+    border-radius: 50% !important;
+    /* Icone page en pagination cercle */
+}
+
+.page-footer {
+    /* Bas de page */
+    background-color: #1c2a48;
+    margin-top: 0.4vh;
+    /* Augmente la marge */
+    /* Contour du background du footer */
+    box-shadow: 0 0 0 0.5vh black;
+    /* Dessine les contours autour du footer */
+}
+
+.footer-copyright {
+    /* Là où il y a le copyright */
+    background-color: #16223a;
+    color: rgb(112, 106, 106);
+}
+
+.footer-copyright a, .footer-copyright a:hover {
+    /* Lien dans le bas de la page */
+    color: white;
+    text-decoration: none;
+}
+
+.page-footer .yt-ic {
+    color: red; /* Met l'image de Youtube en rouge */
+}
+
+.page-footer .tw-ic {
+    color: #3399ff; /* Met l'image de Twitter en bleu */
+    text-decoration: none;
+}

@@ -3,8 +3,14 @@ session_start();
 
 session_unset(); // Détruit les variables de session
 session_destroy();
-include('Header.php');
+
+setcookie('utilisateur', '', time() - 3600); // cookie
+
 ?>
+
+<script>
+    document.location.href = '/index.php';
+    </script>
 
 <body>
 

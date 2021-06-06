@@ -1,0 +1,12 @@
+Options +FollowSymLinks -MultiViews
+RewriteEngine on
+RewriteBase /
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule modifier_news/([a-zA-Z0-9-]+)-([0-9]+) portfolio/modifier_news.php?url=$1&id=$2
+RewriteRule news/([a-zA-Z0-9-]+)-([0-9]+) portfolio/news.php?url=$1&id=$2
+RewriteRule modifier_jeu/([a-zA-Z0-9-]+)-([0-9]+) portfolio/modifier_jeu.php?url=$1&id=$2
+RewriteRule jeu/([a-zA-Z0-9-]+)-([0-9]+)/([a-zA-Z]+) portfolio/jeu.php?url=$1&id=$2&onglet_jeu=$3
+RewriteRule jeu/([a-zA-Z0-9-]+)-([0-9]+) portfolio/jeu.php?url=$1&id=$2
+RewriteRule liste/([a-zA-Z]+)/([a-zA-Z+]+) portfolio/recherche.php?recherche=&categorie=$1&categorie_jeu=$2
+RewriteRule liste/([a-zA-Z]+) portfolio/recherche.php?recherche=&categorie=$1
