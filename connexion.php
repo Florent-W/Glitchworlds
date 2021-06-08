@@ -2,10 +2,11 @@
 session_start();
 $erreurConnexion = false;
 if (!empty($_POST['nom']) and !empty($_POST['mdp'])) { // Contrôle formulare
-    $pseudo = $_POST['nom'];
+    $pseudo = $_POST['nom']; // Pdo, pas  besoin de mysql_real_escape_string
     $mdp = $_POST['mdp'];
     include('connexion_base_donnee.php');
-    $reponse = $bdd->query('SELECT * FROM utilisateurs WHERE pseudo = "' . $pseudo . '"'); // Selection de l'utilisateur si il a rempli son pseudo et son mot de passe
+    $reponse = $bdd->prepare('SELECT * FROM utilisateurs WHERE pseudo = :pseudo'); // Selection de l'utilisateur si il a rempli son pseudo et son mot de passe
+    $reponse->execute(array('pseudo' => $pseudo));
     $donnees = $reponse->fetch();
     if ($donnees) { // Si l'utilisateur indiqué est trouvé et les identifiants sont corrects, on continue
         if (password_verify($_POST['mdp'], $donnees['mdp'])) { // Vérification du mot de passe

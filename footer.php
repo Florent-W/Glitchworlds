@@ -1,3 +1,7 @@
+<?php 
+// Fermeture de la connexion base de données
+   $bdd = null;
+   ?>
 <footer class="page-footer font-small">
     <!-- Bas de la page -->
         <div class="container">
