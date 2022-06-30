@@ -1,4 +1,4 @@
-# Glitchworld
+# Glitchworlds
 
 Création, développement et rédaction du site glitchworlds.com
 
