@@ -1,6 +1,6 @@
 <div class="view" style="background-image: url('background.jpg'); background-repeat: no-repeat; background-size: cover; background-position: center center;">
     <!-- Background -->
-    <div class="groupement-news">
+$    <div class="groupement-news">
         <!-- Permet que la page des news ne prenne pas toute la page -->
         <?php
         $reponse = $bdd->prepare('SELECT article.id, article.url, article.nom_categorie, article.nom_miniature, article.contenu, article.titre, DATE_FORMAT(date_creation, "%Y/%M/%d/%kh%i") AS date_article_dossier, DATE_FORMAT(date_creation, "%d %M %Y") AS date_article FROM article WHERE approuver = 1 ORDER BY id DESC LIMIT 15'); // Sélection des articles
