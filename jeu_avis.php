@@ -6,6 +6,10 @@ $id = $_GET['id'];
 
 <?php include_once('connexion_base_donnee.php');
 include_once('fonctions_php.php');
+require_once('commun/BddJeuClass.php');
+
+// Initialisation
+$bddJeu = new BddJeuClass();
 ?>
 
 <script>
@@ -49,29 +53,27 @@ include_once('fonctions_php.php');
         </div>
     </form>
     <?php
+    $statistiquesNotes = $bddJeu->selectionStatistiquesNotesJeu($id);
+    $moyenneNote = $statistiquesNotes['moyenne_note'];
+    $nombreAvis = $statistiquesNotes['nombre_avis'];
+    $nombreNote = $statistiquesNotes['nombre_note'];
+
     // Si l'utilisateur n'a pas fait de choix concernant le tri des avis ou qu'il a sélectionné le tri par avis les plus récents
     if (!isset($_POST['tri_avis']) or (isset($_POST['tri_avis']) and $_POST['tri_avis'] == "Recents")) {
-        $reponse = $bdd->prepare('SELECT avis.id, utilisateurs.pseudo, utilisateurs.id AS utilisateurs_id, utilisateurs.nom_photo_profil, DATE_FORMAT(avis.date_avis, "%d %M %Y à %Hh%imin%ss") AS date_message, avis.note, avis.contenu FROM avis LEFT JOIN utilisateurs ON avis.id_utilisateur = utilisateurs.id LEFT JOIN jeu ON avis.id_jeu = jeu.id WHERE avis.id_jeu = :id ORDER BY date_avis'); // Récupération des avis
+        $reponse = $bdd->prepare('SELECT avis.id, utilisateurs.pseudo, utilisateurs.id AS utilisateurs_id, utilisateurs.nom_photo_profil, DATE_FORMAT(avis.date_avis, "%d %M %Y à %Hh%imin%ss") AS date_message, avis.note, avis.contenu FROM avis LEFT JOIN utilisateurs ON avis.id_utilisateur = utilisateurs.id LEFT JOIN jeu ON avis.id_jeu = jeu.id WHERE avis.id_jeu = :id AND avis.contenu != "" ORDER BY date_avis'); // Récupération des avis
         $reponse->execute(array('id' => $id));
-        $nombreAvis = $reponse->rowCount();
     }
 
     // Si l'utilisateur a sélectionné le tri par avis les plus aimé
     else if (isset($_POST['tri_avis']) and $_POST['tri_avis'] == "Tops") {
-        $reponse = $bdd->prepare('SELECT avis.id, utilisateurs.pseudo, utilisateurs.id AS utilisateurs_id, utilisateurs.nom_photo_profil, aime_avis.id_avis, COUNT(aime_avis.id_avis) AS nombre_aime, DATE_FORMAT(avis.date_avis, "%d %M %Y à %Hh%imin%ss") AS date_message, avis.note, avis.contenu FROM avis LEFT JOIN utilisateurs ON avis.id_utilisateur = utilisateurs.id LEFT JOIN aime_avis ON avis.id = aime_avis.id_avis LEFT JOIN jeu ON avis.id_jeu = jeu.id WHERE jeu.id = :id GROUP BY aime_avis.id_avis, avis.id ORDER BY nombre_aime DESC'); // Récupération des avis
+        $reponse = $bdd->prepare('SELECT avis.id, utilisateurs.pseudo, utilisateurs.id AS utilisateurs_id, utilisateurs.nom_photo_profil, aime_avis.id_avis, COUNT(aime_avis.id_avis) AS nombre_aime, DATE_FORMAT(avis.date_avis, "%d %M %Y à %Hh%imin%ss") AS date_message, avis.note, avis.contenu FROM avis LEFT JOIN utilisateurs ON avis.id_utilisateur = utilisateurs.id LEFT JOIN aime_avis ON avis.id = aime_avis.id_avis LEFT JOIN jeu ON avis.id_jeu = jeu.id WHERE jeu.id = :id AND avis.contenu != "" GROUP BY aime_avis.id_avis, avis.id ORDER BY nombre_aime DESC'); // Récupération des avis
         $reponse->execute(array('id' => $id));
-        $nombreAvis = $reponse->rowCount();
     }
 
-    // Affichage des abvis
-    if ($nombreAvis >= 1) {
-        $reponse2 = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note FROM avis LEFT JOIN jeu ON avis.id_jeu = jeu.id WHERE jeu.id = :id'); // Récupération de la moyenne des avis
-        $reponse2->execute(array('id' => $id));
-        $donnees2 = $reponse2->fetch();
-        $moyenne_note = $donnees2['moyenne_note'];
-        $reponse2->closeCursor();
-    ?>
-         <div class="list-group-item-text pull-right text-right lead"><span style="border-radius: 50%; border: solid; background-color: LightGreen; padding: 8px; width: 51px; height: 51px; display: inline-block; text-align: center;"><?php echo round($moyenne_note, 1); ?></span></div> <!-- Moyenne des notes arrondis si il y en a pour un jeu -->
+    // Affichage des avis
+    if ($nombreNote >= 1) {
+        ?>
+         <div class="list-group-item-text pull-right text-right lead"><span style="border-radius: 50%; border: solid; background-color: LightGreen; padding: 8px; width: 51px; height: 51px; display: inline-block; text-align: center;"><?php echo round($moyenneNote, 1); ?></span></div> <!-- Moyenne des notes arrondis si il y en a pour un jeu -->
         <h3 style="margin-bottom: 20px;"><?php echo htmlspecialchars($nombreAvis); ?> Avis :</h3>
     <?php
     } else { ?>
@@ -82,9 +84,7 @@ include_once('fonctions_php.php');
     <?php
     $positionAvis = 0; // On va voir la place de l'avis et une fois sur deux, il sera en couleur 
 
-
     while ($donnees = $reponse->fetch()) {
-        if($donnees['contenu'] != '') { // On regarde si l'avis contient un message et on l'affiche si il en a un
         if ($positionAvis % 2 == 0) {  // Un avis sur deux sera en couleur
     ?>
             <div class="list-group-item list-group-item-secondary liste-item-commentaire">
@@ -93,7 +93,7 @@ include_once('fonctions_php.php');
                 <?php }
                 ?>
                 <div class="media">
-                    <img src="/utilisateurs/<?php echo htmlspecialchars($donnees['utilisateurs_id']); ?>/photo_profil/<?php echo htmlspecialchars($donnees['nom_photo_profil']); ?>" onerror="this.oneerror=null; this.src='/1.jpg';" class="img-fluid img-profil img-thumbnail" style="float:left; object-fit: cover;"> <!-- Image à gauche et si image non trouvée, elle est remplacée par une image par défaut, titre à droite -->
+                    <img src="/utilisateurs/<?php echo htmlspecialchars($donnees['utilisateurs_id']); ?>/photo_profil/<?php echo htmlspecialchars($donnees['nom_photo_profil']); ?>" onerror="this.oneerror=null; this.src='/1.png';" class="img-fluid img-profil img-thumbnail" style="float:left; object-fit: cover; max-height: 33vh;"> <!-- Image à gauche et si image non trouvée, elle est remplacée par une image par défaut, titre à droite -->
                     <div class="media-body">
                         <div class="row">
                             <div class="col">
@@ -198,7 +198,6 @@ include_once('fonctions_php.php');
                 </div>
             <?php
             $positionAvis++; // On augmente la position des avis vu qu'on change
-           }
         }
         $reponse->closeCursor();
             ?>

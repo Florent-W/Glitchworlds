@@ -1,0 +1,101 @@
+<?php return array(
+    'root' => array(
+        'name' => '__root__',
+        'pretty_version' => '1.0.0+no-version-set',
+        'version' => '1.0.0.0',
+        'reference' => NULL,
+        'type' => 'library',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'dev' => true,
+    ),
+    'versions' => array(
+        '__root__' => array(
+            'pretty_version' => '1.0.0+no-version-set',
+            'version' => '1.0.0.0',
+            'reference' => NULL,
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'grogy/php-parallel-lint' => array(
+            'dev_requirement' => true,
+            'replaced' => array(
+                0 => '*',
+            ),
+        ),
+        'jakub-onderka/php-console-color' => array(
+            'dev_requirement' => true,
+            'replaced' => array(
+                0 => '*',
+            ),
+        ),
+        'jakub-onderka/php-console-highlighter' => array(
+            'dev_requirement' => true,
+            'replaced' => array(
+                0 => '*',
+            ),
+        ),
+        'jakub-onderka/php-parallel-lint' => array(
+            'dev_requirement' => true,
+            'replaced' => array(
+                0 => '*',
+            ),
+        ),
+        'mustache/mustache' => array(
+            'pretty_version' => 'v2.14.0',
+            'version' => '2.14.0.0',
+            'reference' => '4e2724dd40ae9499a55e7db7df82665be0ab7e34',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../mustache/mustache',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
+        'php-parallel-lint/php-console-color' => array(
+            'pretty_version' => 'v1.0.1',
+            'version' => '1.0.1.0',
+            'reference' => '7adfefd530aa2d7570ba87100a99e2483a543b88',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../php-parallel-lint/php-console-color',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
+        'php-parallel-lint/php-console-highlighter' => array(
+            'pretty_version' => 'v1.0.0',
+            'version' => '1.0.0.0',
+            'reference' => '5b4803384d3303cf8e84141039ef56c8a123138d',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../php-parallel-lint/php-console-highlighter',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
+        'php-parallel-lint/php-parallel-lint' => array(
+            'pretty_version' => 'v1.3.2',
+            'version' => '1.3.2.0',
+            'reference' => '6483c9832e71973ed29cf71bd6b3f4fde438a9de',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../php-parallel-lint/php-parallel-lint',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
+        'phpcompatibility/php-compatibility' => array(
+            'pretty_version' => '9.3.5',
+            'version' => '9.3.5.0',
+            'reference' => '9fb324479acf6f39452e0655d2429cc0d3914243',
+            'type' => 'phpcodesniffer-standard',
+            'install_path' => __DIR__ . '/../phpcompatibility/php-compatibility',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
+        'squizlabs/php_codesniffer' => array(
+            'pretty_version' => '3.7.2',
+            'version' => '3.7.2.0',
+            'reference' => 'ed8e00df0a83aa96acf703f8c2979ff33341f879',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../squizlabs/php_codesniffer',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
+    ),
+);

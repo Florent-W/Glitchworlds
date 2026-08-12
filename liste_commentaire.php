@@ -39,7 +39,7 @@
 
         // Si l'utilisateur a sélectionné le tri par commentaires les plus aimé
         else if (isset($_POST['tri_commentaire']) and $_POST['tri_commentaire'] == "Tops") {
-            $reponse = $bdd->prepare('SELECT ' . $type_commentaire . '.id, utilisateurs.pseudo, utilisateurs.id AS utilisateurs_id, utilisateurs.nom_photo_profil, ' . $type_aime_commentaire . '.id_commentaire, COUNT(aime_commentaire.id_commentaire) AS nombre_aime, DATE_FORMAT(' . $type_commentaire . '.date_commentaire, "%d %M %Y à %Hh%imin%ss") AS date_message, ' . $type_commentaire . '.contenu FROM ' . $type_commentaire . ' LEFT JOIN utilisateurs ON ' . $type_commentaire . '.id_utilisateur = utilisateurs.id LEFT JOIN ' . $type_aime_commentaire . ' ON ' . $type_commentaire . '.id = ' . $type_aime_commentaire . '.id_commentaire WHERE ' . $type_id . ' = :id GROUP BY ' . $type_aime_commentaire . '.id_commentaire, ' . $type_commentaire . '.id ORDER BY nombre_aime DESC'); // Récupération des commentaires
+            $reponse = $bdd->prepare('SELECT ' . $type_commentaire . '.id, utilisateurs.pseudo, utilisateurs.id AS utilisateurs_id, utilisateurs.nom_photo_profil, ' . $type_aime_commentaire . '.id_commentaire, COUNT(' . $type_aime_commentaire . '.id_commentaire) AS nombre_aime, DATE_FORMAT(' . $type_commentaire . '.date_commentaire, "%d %M %Y à %Hh%imin%ss") AS date_message, ' . $type_commentaire . '.contenu FROM ' . $type_commentaire . ' LEFT JOIN utilisateurs ON ' . $type_commentaire . '.id_utilisateur = utilisateurs.id LEFT JOIN ' . $type_aime_commentaire . ' ON ' . $type_commentaire . '.id = ' . $type_aime_commentaire . '.id_commentaire WHERE ' . $type_id . ' = :id GROUP BY ' . $type_aime_commentaire . '.id_commentaire, ' . $type_commentaire . '.id ORDER BY nombre_aime DESC'); // Récupération des commentaires, utilisateurs.pseudo, utilisateurs.id AS utilisateurs_id, utilisateurs.nom_photo
             $reponse->execute(array('id' => $id));
             $nombreCommentaire = $reponse->rowCount();
         }
@@ -68,7 +68,7 @@
                     ?>
                  <div class="media">
 
-                     <img src="/utilisateurs/<?php echo htmlspecialchars($donnees['utilisateurs_id']); ?>/photo_profil/<?php echo htmlspecialchars($donnees['nom_photo_profil']); ?>" onerror="this.oneerror=null; this.src='/1.jpg';" class="img-fluid img-profil img-thumbnail" style="float:left; object-fit: cover;"> <!-- Image à gauche et si image non trouvée, elle est remplacée par une image par défaut, titre à droite -->
+                     <img src="/utilisateurs/<?php echo htmlspecialchars($donnees['utilisateurs_id']); ?>/photo_profil/<?php echo htmlspecialchars($donnees['nom_photo_profil']); ?>" onerror="this.oneerror=null; this.src='/1.png';" class="img-fluid img-profil img-thumbnail" style="float:left; object-fit: cover; max-height: 33vh;"> <!-- Image à gauche et si image non trouvée, elle est remplacée par une image par défaut, titre à droite -->
                      <div class="media-body">
                          <div class="row">
                              <div class="col">
@@ -86,25 +86,34 @@
 
                          <?php
                             // Voir si l'utilisateur à déjà aimer le commentaire
-
-                            if (isset($_SESSION['pseudo'])) {
-                                $pseudoActuel = $_SESSION['pseudo'];
-                            } else {
-                                $pseudoActuel = null;
+                            try {
+                                $reponse2 = $bdd->prepare('SELECT COUNT(DISTINCT(' . $type_aime_commentaire . '.id_pseudo_utilisateur_qui_aime)) AS utilisateur_a_deja_aime FROM ' . $type_aime_commentaire . ' INNER JOIN ' . $type_commentaire . ' ON ' . $type_aime_commentaire . '.id_commentaire = ' . $type_commentaire . '.id INNER JOIN utilisateurs ON ' . $type_aime_commentaire . '.id_pseudo_utilisateur_qui_aime = utilisateurs.id WHERE id_commentaire = :id AND id_pseudo_utilisateur_qui_aime = :id_pseudo_aime');
+                                $reponse2->execute(array('id' => $donnees['id'], 'id_pseudo_aime' => $_SESSION['id']));
+                                $donnees2 = $reponse2->fetch();
+                                $reponse2->closeCursor();
+                            } catch (PDOException $e) {
+                                echo "Erreur : " . $e->getMessage();
                             }
-
-                            $reponse2 = $bdd->prepare('SELECT COUNT(DISTINCT(' . $type_aime_commentaire . '.pseudo_utilisateur_qui_aime)) AS utilisateur_a_deja_aime FROM ' . $type_aime_commentaire . ' INNER JOIN ' . $type_commentaire . ' ON ' . $type_aime_commentaire . '.id_commentaire = ' . $type_commentaire . '.id INNER JOIN utilisateurs ON ' . $type_aime_commentaire . '.pseudo_utilisateur_qui_aime = utilisateurs.pseudo WHERE id_commentaire = :id AND utilisateurs.pseudo = :pseudo');
-                            $reponse2->execute(array('id' => $donnees['id'], 'pseudo' => $pseudoActuel));
-                            $donnees2 = $reponse2->fetch();
-                            $reponse2->closeCursor();
-                            ?>
-
-                         <?php
+                            
+                           
                             // Voir le nombre de j'aime pour un commentaire
-                            $reponse3 = $bdd->prepare('SELECT COUNT(DISTINCT(' . $type_aime_commentaire . '.pseudo_utilisateur_qui_aime)) AS nombre_aime FROM ' . $type_aime_commentaire . ' INNER JOIN ' . $type_commentaire . ' ON ' . $type_aime_commentaire . '.id_commentaire = ' . $type_commentaire . '.id INNER JOIN utilisateurs ON ' . $type_aime_commentaire . '.pseudo_utilisateur_qui_aime = utilisateurs.pseudo WHERE id_commentaire = :id');
-                            $reponse3->execute(array('id' => $donnees['id']));
-                            $donnees3 = $reponse3->fetch();
-                            $reponse3->closeCursor();
+                            try {
+                                $reponse3 = $bdd->prepare("SELECT (SELECT COUNT(DISTINCT(id_pseudo_utilisateur_qui_aime))
+                                                        FROM " . $type_aime_commentaire . "
+                                                        WHERE id_commentaire = :id) AS nombre_aime,
+                                                         " . $type_aime_commentaire . ".id_pseudo_utilisateur_qui_aime AS id_utilisateur, utilisateurs.pseudo
+                                                        FROM " . $type_aime_commentaire . " 
+                                                        INNER JOIN " . $type_commentaire . " ON " . $type_aime_commentaire . ".id_commentaire = " . $type_commentaire . ".id 
+                                                        INNER JOIN utilisateurs ON " . $type_aime_commentaire . ".id_pseudo_utilisateur_qui_aime = utilisateurs.id WHERE id_commentaire = :id");
+                                $reponse3->execute(array('id' => $donnees['id']));
+                                $donnees3 = $reponse3->fetchAll();
+                                $reponse3->closeCursor();
+                            } catch (PDOException $e) {
+                                echo "Erreur : " . $e->getMessage();
+                            }
+                            if(empty($donnees3)) {
+                                $donnees3 = array(array('nombre_aime' => 0));
+                            }
                             ?>
 
                          <?php if (isset($_SESSION['pseudo']) && $_SESSION['statut'] == "Administrateur") { // Si le statut de l'utilisateur est administrateur, on lui autorise à modifier un commentaire  
@@ -118,22 +127,26 @@
                          <?php } ?>
                          <div class="row">
                              <div class="col">
-                                 <?php if (isset($_SESSION['id']) and ($donnees2['utilisateur_a_deja_aime']) < 1) { // Si l'utilisateur est connecté et qu'il n'a pas encore aimer le commentaire, il pourra aimer un commentaire
+                                <?php
+                                 $liste_personnes_aime = aimeCommentaireTexte($donnees3); // Récupération du texte des personnes qui ont aimés le commentaire
+                                 ?>
+                                 <?php
+                                  if (isset($_SESSION['id']) and ($donnees2['utilisateur_a_deja_aime']) < 1) { // Si l'utilisateur est connecté et qu'il n'a pas encore aimer le commentaire, il pourra aimer un commentaire
                                         if (!isset($type_commentaire)) {
                                     ?>
-                                         <a href="/news.php?id=<?php echo htmlspecialchars($_GET['id']); ?>&url=a&aime_commentaire_id=<?php echo $donnees['id']; ?>" class="float-right"><?php echo htmlspecialchars($donnees3['nombre_aime']); ?> <i class="fas fa-thumbs-up"></i> <!-- Pour aimer un commentaire -->
+                                         <a data-toggle="tooltip" data-html="true" title="<?php echo htmlspecialchars($liste_personnes_aime); ?>" href="/news.php?id=<?php echo htmlspecialchars($_GET['id']); ?>&url=<?php echo htmlspecialchars($_GET['url']); ?>&aime_commentaire_id=<?php echo $donnees['id']; ?>" class="float-right"><?php echo htmlspecialchars($donnees3[0]['nombre_aime']); ?> <i class="fas fa-thumbs-up"></i> <!-- Pour aimer un commentaire -->
                                          </a>
                                      <?php
                                         }
                                         else if($type_commentaire == "commentaire_jeu") {
                                             ?>
-                                            <a href="/jeu.php?id=<?php echo htmlspecialchars($_GET['id']); ?>&url=a&aime_commentaire_id=<?php echo $donnees['id']; ?>" class="float-right"><?php echo htmlspecialchars($donnees3['nombre_aime']); ?> <i class="fas fa-thumbs-up"></i> <!-- Pour aimer un commentaire -->
+                                            <a data-toggle="tooltip" data-html="true" title="<?php echo htmlspecialchars($liste_personnes_aime); ?>" href="/jeu.php?id=<?php echo htmlspecialchars($_GET['id']); ?>&url=<?php echo htmlspecialchars($_GET['url']); ?>&aime_commentaire_id=<?php echo $donnees['id']; ?>" class="float-right"><?php echo htmlspecialchars($donnees3[0]['nombre_aime']); ?> <i class="fas fa-thumbs-up"></i> <!-- Pour aimer un commentaire -->
                                          </a>
                                          <?php
                                         }
                                     } else {
                                         ?>
-                                     <div class="float-right"><?php echo $donnees3['nombre_aime']; ?> <i class="fas fa-thumbs-up"></i>
+                                     <div data-toggle="tooltip" data-html="true" title="<?php echo htmlspecialchars($liste_personnes_aime); ?>" class="float-right"><?php echo $donnees3[0]['nombre_aime']; ?> <i class="fas fa-thumbs-up"></i>
                                      </div>
                                  <?php }
                                     ?>
@@ -195,6 +208,7 @@
                              </div>
                          </div>
                          <button type="submit" class="btn btn-success" style="margin-bottom : 10px;">Envoyer</button>
+                         <input type="hidden" name="token" id="token" value="<?php $_SESSION['token']; ?>">
                          <input type="hidden" value="<?php echo htmlspecialchars($_GET['id']); ?>" name="id_news">
                          <input type="hidden" value="<?php echo htmlspecialchars($_GET['url']); ?>" name="url">
                      </form>
@@ -239,6 +253,7 @@
                      </form>
 
                      <?php
+                        include('nombre_aime_modal.php');
                         include('upload_image.php');
                         ?>
 

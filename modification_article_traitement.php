@@ -26,10 +26,18 @@ if (!empty($_POST['titre']) and !empty($_POST['id']) and !empty($_POST['contenu'
     $hauteur = $tailleImage[1];
     $largeur_miniature = 300; // Largeur de la future miniature
     $hauteur_miniature = $hauteur / $largeur * 300;
-    $im = imagecreatefromjpeg($_FILES['miniature']['tmp_name']); // Stockage de la photo qui vient d'être uploadée
-    $im_miniature = imagecreatetruecolor($largeur_miniature, $hauteur_miniature); // Création de la miniature avec une couleur de 24 bits avec une hauteur proportionnelle à celle d'origine
-    imagecopyresampled($im_miniature, $im, 0, 0, 0, 0, $largeur_miniature, $hauteur_miniature, $largeur, $hauteur); // Copie de l'image d'origine dans la miniature et redimensionnement
-    imagejpeg($im_miniature, 'miniature/' . $_FILES['miniature']['name'], 100); // Création de l'image jpg dans le dossier miniature
+    if(pathinfo($_FILES['miniature']['tmp_name'], PATHINFO_EXTENSION) == ".jpg") { // On regarde l'extension de l'image pour convertir
+        $im = imagecreatefromjpeg($_FILES['miniature']['tmp_name']); // Stockage de la photo qui vient d'être uploadée
+        $im_miniature = imagecreatetruecolor($largeur_miniature, $hauteur_miniature); // Création de la miniature avec une couleur de 24 bits avec une hauteur proportionnelle à celle d'origine
+        imagecopyresampled($im_miniature, $im, 0, 0, 0, 0, $largeur_miniature, $hauteur_miniature, $largeur, $hauteur); // Copie de l'image d'origine dans la miniature et redimensionnement
+        imagejpeg($im_miniature, 'miniature/' . $_FILES['miniature']['name'], 100); // Création de l'image jpg dans le dossier miniature
+        }
+        else if(pathinfo($_FILES['miniature']['tmp_name'], PATHINFO_EXTENSION) == ".png") { // On regarde l'extension de l'image pour convertir
+            $im = imagecreatefrompng($_FILES['miniature']['tmp_name']); // Stockage de la photo qui vient d'être uploadée
+            $im_miniature = imagecreatetruecolor($largeur_miniature, $hauteur_miniature); // Création de la miniature avec une couleur de 24 bits avec une hauteur proportionnelle à celle d'origine
+            imagecopyresampled($im_miniature, $im, 0, 0, 0, 0, $largeur_miniature, $hauteur_miniature, $largeur, $hauteur); // Copie de l'image d'origine dans la miniature et redimensionnement
+            imagepng($im_miniature, 'miniature/' . $_FILES['miniature']['name'], 100); // Création de l'image png dans le dossier miniature
+        }
 
     $reponse = $bdd->prepare('UPDATE article SET titre = :titre, contenu = :contenu, nom_categorie = :categorie, nom_miniature = :nom_miniature, url = :url, id_jeu = :id_jeu WHERE id = :id'); // Modification news
     $reponse->execute(array('titre' => $titre, 'contenu' => $contenu, 'categorie' => $categorie, 'nom_miniature' => $nom_miniature, 'url' => $url, 'id' => $id, 'id_jeu' => $id_jeu));

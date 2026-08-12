@@ -1,7 +1,30 @@
 <?php
 session_start(); // Lance variable de session
+
+require_once('commun/BddJeuClass.php');
+include_once('fonctions_php.php');
+
+// Initialisation
+$bddJeu = new BddJeuClass();
+
 $url = htmlspecialchars($_GET['url']);
 $id = htmlspecialchars($_GET['id']);
+
+$statistiquesNotes = $bddJeu->selectionStatistiquesNotesJeu($id);
+if(!empty($statistiquesNotes['moyenne_note'])) { // On regarde si il y a bien une moyenne
+    $moyenneNote = round($statistiquesNotes['moyenne_note'], 1);
+} else {
+    $moyenneNote = 0;
+}
+$moyenneNoteArrondi = arrondirNote($moyenneNote);
+$nombreAvis = $statistiquesNotes['nombre_avis'];
+$nombreNote = $statistiquesNotes['nombre_note'];
+
+$statistiquesArticles = $bddJeu->selectionNombreArticleCategorie($id);
+$nombreNews = $statistiquesArticles['nb_news'];
+$nombreGlitch = $statistiquesArticles['nb_glitch'];
+$nombreMods = $statistiquesArticles['nb_mods'];
+$nombreTutoriel = $statistiquesArticles['nb_tutoriel'];
 
 if (isset($_GET['onglet_jeu'])) {
     $onglet_jeu = htmlspecialchars($_GET['onglet_jeu']);
@@ -13,13 +36,32 @@ include_once('connexion_base_donnee.php');
 $reponse = $bdd->prepare('SELECT jeu.*, categorie_jeu.nom AS categorie_jeu_nom, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu, utilisateurs.id AS utilisateurs_id, utilisateurs.pseudo, utilisateurs.nom_photo_profil FROM jeu LEFT JOIN utilisateurs ON jeu.id_auteur_presentation = utilisateurs.id LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id WHERE jeu.id = :id'); // Récupération du jeu
 $reponse->execute(array('id' => $id));
 $donnees = $reponse->fetch();
+if(isset($donnees) && $donnees) { // Si un jeu a été trouvé
 
-$reponse2 = $bdd->prepare('SELECT utilisateurs.activer_video_background, utilisateurs.activer_son_video_background FROM utilisateurs WHERE utilisateurs.pseudo = :pseudo AND utilisateurs.id = :id'); // Récupération de l'option de musique d'utilisateur
-$reponse2->execute(array('pseudo' => $_SESSION['pseudo'], 'id' => $_SESSION['id']));
-$donnees2 = $reponse2->fetch();
-$activer_video_background = $donnees2['activer_video_background'];
-$activer_son_video_background = $donnees2['activer_son_video_background'];
-$reponse2->closeCursor();
+    if ($_GET['url'] != $donnees["url"]) { // On redirige si l'url n'est pas pas la meme que le jeu
+        header("Status: 301 Moved Permanently", false, 301);
+        header("Location: " . $donnees['url'] . "-" . $id);
+        exit();
+    }
+if(!empty($_SESSION)) {
+    $reponse2 = $bdd->prepare('SELECT utilisateurs.activer_video_background, utilisateurs.activer_son_video_background FROM utilisateurs WHERE utilisateurs.pseudo = :pseudo AND utilisateurs.id = :id'); // Récupération de l'option de musique d'utilisateur
+    $reponse2->execute(array('pseudo' => $_SESSION['pseudo'], 'id' => $_SESSION['id']));
+    $donnees2 = $reponse2->fetch();
+
+    $activer_video_background = $donnees2['activer_video_background'];
+    $activer_son_video_background = $donnees2['activer_son_video_background'];
+    $reponse2->closeCursor();
+}
+
+$reponse3 = $bdd->prepare('SELECT nom_plateforme FROM plateformes LEFT JOIN jeu_lier_plateformes ON plateformes.id = jeu_lier_plateformes.id_plateforme WHERE jeu_lier_plateformes.id_jeu = :id'); // Récupération des plateformes
+$reponse3->execute(array('id' => $id));
+$donnees3 = $reponse3->fetchAll();
+
+$plateformes = array();
+foreach ($donnees3 as $plateforme) {
+    $plateformes[] = $plateforme['nom_plateforme'];
+}
+$reponse3->closeCursor();
 
 if ($onglet_jeu == "") {
     $title = $donnees['nom'];
@@ -27,12 +69,10 @@ if ($onglet_jeu == "") {
     $title = ucfirst($onglet_jeu) . " de " . $donnees['nom']; // Premier caractère en majuscule
 }
 
-include_once('fonctions_php.php');
-
 if (($donnees['description']) != "") {
     $meta_description = $donnees['description'];
 } else {
-    $meta_description = tronquerTexte(remplacementBBCode($donnees['contenu'], false, true), 150, "");
+    $meta_description = tronquerTexte(remplacementBBCode($donnees['contenu'], false, true), 200, "");
 }
 
 include('Header.php');
@@ -73,9 +113,9 @@ if ($donnees['presentation'] != "section") { // On charge le bon background si c
                                                                                                                                                                                 } else {
                                                                                                                                                                                     echo 1;
                                                                                                                                                                                 } ?>, opacity:0.8, startAt: 30, showControls: false, stopMovieOnBlur: false, remember_last_time: true, addRaster: true, optimizeDisplay: true, showYTLogo: false, ratio: 'auto'}"></div>
-        <?php } ?>
+        <?php } ?><script> </script>
         <!-- Affichage jeu -->
-        <?php
+        <?php 
         if ($donnees['presentation'] == "conteneur") { // Si on a choisit comme type de présentation un conteneur
         ?>
             <div class="container container-bordure bg-white">
@@ -84,7 +124,7 @@ if ($donnees['presentation'] != "section") { // On charge le bon background si c
                 <div id="fullpage">
                     <div class="section container fp-auto-height container-bordure bg-white" name='sectionPresentationDebut' id='<?php echo $donnees['nom']; ?>'>
                     <?php
-                } else {
+                } else { 
                     ?> <div class="bg-white"><?php
                                                                                 } ?>
                         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> <!-- Publicité -->
@@ -95,7 +135,43 @@ if ($donnees['presentation'] != "section") { // On charge le bon background si c
                         <div class="d-flex justify-content-center">
                             <img src="/Jeux/<?php echo $donnees['url']; ?>/bandeaux/<?php echo htmlspecialchars($donnees['nom_banniere']); ?>" onerror="this.oneerror=null; this.src='/banniere.jpg';" class="d-block img-fluid" style="width: 100%; height:auto; max-height: 500px; margin-bottom:1vh; margin-top:1vh; border: 3px solid;">
                         </div>
-                        <h1 class="d-flex justify-content-center" id="titreJeu" style="font-size: 1.8em;"><?php echo htmlspecialchars($donnees['nom']); ?></h1>
+                        <div class="d-flex justify-content-center">
+                        <h1 id="titreJeu" style="font-size: 1.8em;"><?php echo htmlspecialchars($donnees['nom']); ?></h1> 
+                    <?php if(isset($_SESSION['id'])) { // Si l'utilisateur est connecté, il peut ajouter des favoris
+                    ?>
+                    <script>$(document).ready(function() {
+                        $('#btn_ajouter_favori').on('click', function() {
+                            ajouterFavori(<?php echo $_SESSION['id']; ?>, <?php echo $id; ?>);
+                        });
+                    });
+                    </script>
+                        <?php 
+                            $jeuDejaFavori = $bddJeu->selectionJeuDejaFavori($_SESSION['id'], $id); // On vérifie si le jeu est déjà en favori
+                            if($jeuDejaFavori) {
+                                echo '<i class="fa fa-star ml-2 etoile-favori" id="btn_ajouter_favori" data-toggle="tooltip" title="Retirer le jeu des Favoris"></i>'; // Si le jeu est déjà favori, on charge l'etoile favori
+                            } else {
+                                 echo '<i class="fa fa-star ml-2 etoile-non-favori" id="btn_ajouter_favori" data-toggle="tooltip" title="Ajouter le jeu en Favoris"></i>'; // Sinon, on charge l'étoile non favori
+                            } 
+                        } ?></div>
+                            <div class="d-flex justify-content-center" id="moyenneJeu">
+                        <?php if($nombreNote > 0) { ?>
+                            <input type="radio" <?php if ($moyenneNoteArrondi == 0.5) { echo "checked"; } ?> class="star-affichage">
+                            <input type="radio" <?php if ($moyenneNoteArrondi == 1) { echo "checked"; } ?> class="star-affichage">
+                            <input type="radio" <?php if ($moyenneNoteArrondi == 1.5) { echo "checked"; } ?> class="star-affichage">
+                            <input type="radio" <?php if ($moyenneNoteArrondi == 2) { echo "checked"; } ?> class="star-affichage">
+                            <input type="radio" <?php if ($moyenneNoteArrondi == 2.5) { echo "checked"; } ?> class="star-affichage">
+                            <input type="radio" <?php if ($moyenneNoteArrondi == 3) { echo "checked"; } ?> class="star-affichage">
+                            <input type="radio" <?php if ($moyenneNoteArrondi == 3.5) { echo "checked"; } ?> class="star-affichage">
+                            <input type="radio" <?php if ($moyenneNoteArrondi == 4) { echo "checked"; } ?> class="star-affichage">
+                            <input type="radio" <?php if ($moyenneNoteArrondi == 4.5) { echo "checked"; } ?> class="star-affichage">
+                            <input type="radio" <?php if ($moyenneNoteArrondi == 5) { echo "checked"; } ?> class="star-affichage">
+                        <?php echo " " . $moyenneNote . " (" . $nombreNote . " "; if($nombreNote > 1) { echo "notes)"; } else { echo "note)"; }
+                         }
+                         else { ?>
+                        Aucune note pour l'instant 
+                       <?php } 
+                       ?>
+                        </div>    
                         <hr>
                         <div class="row d-flex justify-content-center">
                             <script>
@@ -104,11 +180,11 @@ if ($donnees['presentation'] != "section") { // On charge le bon background si c
                             </script>
 
                             <button class="btn btn-outline-primary col-xs-4 btn_jeu" id="btn_presentation" onclick="chargerJeuOngletPresentation(type_presentation);" style="margin-right: 5px;">Présentation</button> <!-- Lien vers présentation du jeu -->
-                            <button href="/jeu/<?php echo $url; ?>-<?php echo $id; ?>/avis" class="btn btn-outline-warning col-xs-3 btn_jeu" id="btn_avis" onclick="chargerJeuOngletNews('avis', type_presentation);" style="margin-right: 5px;">Avis</button> <!-- Lien vers avis -->
-                            <button href="/jeu/<?php echo $url; ?>-<?php echo $id; ?>/news" class="btn btn-outline-info col-xs-3 btn_jeu" id="btn_news" onclick="chargerJeuOngletNews('news', type_presentation);" style="margin-right: 5px;">News</button> <!-- Lien vers articles du jeu -->
-                            <button href="/jeu/<?php echo $url; ?>-<?php echo $id; ?>/glitchs" class="btn btn-outline-secondary col-xs-3 btn_jeu" id="btn_glitchs" onclick="chargerJeuOngletNews('glitchs', type_presentation);">Glitchs</button> <!-- Lien vers glitch -->
-                            <button href="/jeu/<?php echo $url; ?>-<?php echo $id; ?>/mods" class="btn btn-outline-dark col-xs-3 btn_jeu" id="btn_mods" onclick="chargerJeuOngletNews('mods', type_presentation);" style="margin-left: 5px;">Mods</button> <!-- Lien vers mods -->
-                            <button href="/jeu/<?php echo $url; ?>-<?php echo $id; ?>/tutoriels" class="btn btn-outline-success col-xs-3 btn_jeu" id="btn_tutoriels" onclick="chargerJeuOngletNews('tutoriels', type_presentation);" style="margin-left: 5px;">Tutoriels</button> <!-- Lien vers tutoriels -->
+                            <button href="/jeu/<?php echo $url; ?>-<?php echo $id; ?>/avis" class="btn btn-outline-warning col-xs-3 btn_jeu" id="btn_avis" onclick="chargerJeuOngletNews('avis', type_presentation);" style="margin-right: 5px;">Avis (<?php echo $nombreAvis; ?>)</button> <!-- Lien vers avis -->
+                            <button href="/jeu/<?php echo $url; ?>-<?php echo $id; ?>/news" class="btn btn-outline-info col-xs-3 btn_jeu" id="btn_news" onclick="chargerJeuOngletNews('news', type_presentation);" style="margin-right: 5px;">News (<?php echo $nombreNews; ?>)</button> <!-- Lien vers articles du jeu -->
+                            <button href="/jeu/<?php echo $url; ?>-<?php echo $id; ?>/glitchs" class="btn btn-outline-secondary col-xs-3 btn_jeu" id="btn_glitchs" onclick="chargerJeuOngletNews('glitchs', type_presentation);">Glitchs (<?php echo $nombreGlitch; ?>)</button> <!-- Lien vers glitch -->
+                            <button href="/jeu/<?php echo $url; ?>-<?php echo $id; ?>/mods" class="btn btn-outline-dark col-xs-3 btn_jeu" id="btn_mods" onclick="chargerJeuOngletNews('mods', type_presentation);" style="margin-left: 5px;">Mods (<?php echo $nombreMods; ?>)</button> <!-- Lien vers mods -->
+                            <button href="/jeu/<?php echo $url; ?>-<?php echo $id; ?>/tutoriels" class="btn btn-outline-success col-xs-3 btn_jeu" id="btn_tutoriels" onclick="chargerJeuOngletNews('tutoriels', type_presentation);" style="margin-left: 5px;">Tutoriels (<?php echo $nombreTutoriel; ?>)</button> <!-- Lien vers tutoriels -->
                         </div>
                         <script>
                             if (onglet_jeu == "") { // On met actif le bouton d'onglet
@@ -125,6 +201,7 @@ if ($donnees['presentation'] != "section") { // On charge le bon background si c
 
                     <div id="jeu_onglet"></div>
                     <script>
+
                         // Fonction qui va charger l'onglet présentation d'un jeu
                         function chargerJeuOngletPresentation(type_presentation) {
                             if (onglet_jeu != "") { // Si l'onglet précédent n'est pas celui de présentation, on peut activer l'onglet selectionné et chargé la présentation
@@ -143,7 +220,9 @@ if ($donnees['presentation'] != "section") { // On charge le bon background si c
                                         nom_miniature: '<?php echo $donnees['nom_miniature']; ?>',
                                         id: '<?php echo $id; ?>',
                                         categorie_jeu_nom: '<?php echo $donnees['categorie_jeu_nom']; ?>',
-                                        plateformes: '<?php echo $donnees['plateformes']; ?>',
+                                        plateformes: '<?php echo $plateformes; ?>',
+                                        moyenne_note_arrondi: '<?php echo $moyenneNoteArrondi; ?>',
+                                        nombre_note: '<?php echo $nombreNote; ?>',
                                         pseudo: '<?php echo $donnees['pseudo']; ?>',
                                         utilisateurs_id: '<?php echo $donnees['utilisateurs_id']; ?>',
                                         nom_photo_profil: '<?php echo $donnees['nom_photo_profil']; ?>',
@@ -217,7 +296,8 @@ if ($donnees['presentation'] != "section") { // On charge le bon background si c
                             location.reload();
                         }
                     </script>
-                    <?php
+                    <?php 
+
                     switch ($onglet_jeu) { // On inclut l'onglet sur lequel on est    
                         case "news":
                         case "glitchs":
@@ -253,7 +333,9 @@ if ($donnees['presentation'] != "section") { // On charge le bon background si c
                                     nom_miniature: '<?php echo $donnees['nom_miniature']; ?>',
                                     id: '<?php echo $id; ?>',
                                     categorie_jeu_nom: '<?php echo $donnees['categorie_jeu_nom']; ?>',
-                                    plateformes: '<?php echo $donnees['plateformes']; ?>',
+                                    plateformes: '<?php echo json_encode($plateformes); ?>',
+                                    moyenne_note_arrondi: '<?php echo $moyenneNoteArrondi; ?>',
+                                    nombre_note: '<?php echo $nombreNote; ?>',
                                     pseudo: '<?php echo $donnees['pseudo']; ?>',
                                     utilisateurs_id: '<?php echo $donnees['utilisateurs_id']; ?>',
                                     nom_photo_profil: '<?php echo $donnees['nom_photo_profil']; ?>',
@@ -309,13 +391,13 @@ if ($donnees['presentation'] != "section") { // On charge le bon background si c
                     ?>
 
                     <?php
-                    if ($donnees['presentation'] == "section") {
+                    if (isset($donnees['presentation']) && $donnees['presentation'] == "section") {
                     ?><div name="sectionPresentationFin" id="Commentaires" class="section container"><?php
                                     }
                                     $type_commentaire = "commentaire_jeu";
                                     include('liste_commentaire.php');
 
-                                    if ($donnees['presentation'] == "section") {
+                                    if (isset($donnees['presentation']) && $donnees['presentation'] == "section") {
                                         ?></div><?php
                                     } ?>
                     </div>
@@ -384,20 +466,34 @@ if ($donnees['presentation'] != "section") { // On charge le bon background si c
                 });
             </script>
             <?php
-            $reponse = $bdd->prepare('SELECT jeu.id, jeu.url FROM jeu WHERE id < :id AND jeu.approuver = "approuver" ORDER BY id DESC LIMIT 1'); // Récupération de la news précédente
+            // Jeu précédent
+            $reponse = $bdd->prepare('SELECT jeu.id, jeu.url FROM jeu WHERE id < :id AND jeu.approuver = "approuver" ORDER BY id DESC LIMIT 1');
             $reponse->execute(array('id' => $id));
-            $nbPagePrecedente = $reponse->rowCount();
             $donnees = $reponse->fetch();
 
-            $pagePrecedente = "/jeu" . "/" . $donnees['url'] . '-' . $donnees['id'];
+            if (!empty($donnees)) {
+                $pagePrecedente = "/jeu/" . $donnees['url'] . '-' . $donnees['id'];
+                $nbPagePrecedente = 1;
+            } else {
+                $pagePrecedente = '';
+                $nbPagePrecedente = 0;
+            }
+
             $reponse->closeCursor();
 
-            $reponse = $bdd->prepare('SELECT jeu.id, jeu.url FROM jeu WHERE id > :id AND jeu.approuver = "approuver" ORDER BY id ASC LIMIT 1'); // Récupération de la news suivante
+            // Jeu suivant
+            $reponse = $bdd->prepare('SELECT jeu.id, jeu.url FROM jeu WHERE id > :id AND jeu.approuver = "approuver" ORDER BY id ASC LIMIT 1');
             $reponse->execute(array('id' => $id));
-            $nbPageSuivante = $reponse->rowCount();
             $donnees = $reponse->fetch();
 
-            $pageSuivante = "/jeu" . "/" . $donnees['url'] . '-' . $donnees['id'];
+            if (!empty($donnees)) {
+                $pageSuivante = "/jeu/" . $donnees['url'] . '-' . $donnees['id'];
+                $nbPageSuivante = 1;
+            } else {
+                $pageSuivante = '';
+                $nbPageSuivante = 0;
+            }
+
             $reponse->closeCursor();
             ?>
 
@@ -423,3 +519,9 @@ if ($donnees['presentation'] != "section") { // On charge le bon background si c
         </body>
 
         </html>
+        <?php }
+        else { // Si on trouve pas de jeu, on redirige vers l'accueil
+            http_response_code(404);
+            header("Location: /");
+            exit();
+        }

@@ -97,5 +97,19 @@
         <option data-content="Mac <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/mac.png' alt='Mac'>" value="mac.png"></option>
         <option data-content="Linux <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/linux.png' alt='Linux'>" value="linux.png"></option>
         <option data-content="Android <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/android.png' alt='Android'>" value="android.png"></option>
+        <option data-content="Nintendo 64 <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/nintendo_64.png' alt='Nintendo 64'>" value="nintendo_64.png"></option>
+        <option data-content="Wii <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/wii.png' alt='Wii'>" value="wii.png"></option>
+        <option data-content="Wii U <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/wii_u.png' alt='Wii U'>" value="wii_u.png"></option>
+        <option data-content="Nintendo Switch <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/nintendo_switch.png' alt='Nintendo Switch'>" value="nintendo_switch.png"></option>
+        <option data-content="Nintendo 3DS <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/nintendo_3ds.png' alt='Nintendo 3DS'>" value="nintendo_3ds.png"></option>
+        <option data-content="Playstation 2 <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/playstation_2.png' alt='Playstation 2'>" value="playstation_2.png"></option>
+        <option data-content="Playstation 3 <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/playstation_3.png' alt='Playstation 3'>" value="playstation_3.png"></option>
+        <option data-content="Playstation 4 <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/playstation_4.png' alt='Playstation 4'>" value="playstation_4.png"></option>
+        <option data-content="Xbox <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/xbox.png' alt='Xbox'>" value="xbox.png"></option>
+        <option data-content="Xbox 360 <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/xbox_360.png' alt='Xbox 360'>" value="xbox_360.png"></option>
+        <option data-content="Xbox One <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/xbox_one.jpg' alt='Xbox One'>" value="xbox_one.jpg"></option>
+        <option data-content="PSP <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/psp.png' alt='PSP'>" value="psp.png"></option>
+        <option data-content="PS Vita <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/ps_vita.png' alt='PS Vita'>" value="ps_vita.png"></option>
+        <option data-content="Nintendo DSi <img class='img-fluid' style='width: auto; height: auto; max-width: 41px; max-height: 31px;' src='/icones/nintendo_dsi.png' alt='Nintendo DSi'>" value="nintendo_dsi.png"></option>
     </select>
 </div>

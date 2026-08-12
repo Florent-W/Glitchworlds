@@ -215,9 +215,15 @@ $dateArticle = $donnees['date_article_dossier']; // Récupération de la date po
 </body>
 <?php
 $reponse->closeCursor();
-?>
 
-<?php include('confirmation_suppression_article.php'); ?>
+// On regarde si on est dans le traitement, si non, on empêche le changement de page sans alerte
+if((empty($_POST) || (empty($_POST['titre']) && empty($_POST['jeu']) && empty($_POST['data']))) && isset($_SESSION['pseudo'])) {
+    echo '<script>
+    popupChangementDePage(); 
+    </script>';
+}      
+   
+include('confirmation_suppression_article.php'); ?>
 <?php
 include('footer.php');
 ?>

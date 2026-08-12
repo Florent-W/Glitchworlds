@@ -8,6 +8,9 @@ RewriteRule news/([a-zA-Z0-9-]+)-([0-9]+) news.php?url=$1&id=$2
 RewriteRule modifier_jeu/([a-zA-Z0-9-]+)-([0-9]+) modifier_jeu.php?url=$1&id=$2
 RewriteRule jeu/([a-zA-Z0-9-]+)-([0-9]+)/([a-zA-Z]+) jeu.php?url=$1&id=$2&onglet_jeu=$3
 RewriteRule jeu/([a-zA-Z0-9-]+)-([0-9]+) jeu.php?url=$1&id=$2
+RewriteRule liste/([a-zA-Z]+)/favoris recherche.php?recherche=&categorie=$1&favoris=true
 RewriteRule liste/([a-zA-Z]+)/([a-zA-Z+]+) recherche.php?recherche=&categorie=$1&categorie_jeu=$2
 RewriteRule liste/([a-zA-Z]+) recherche.php?recherche=&categorie=$1
-RewriteRule articles/([a-zA-Z]+)/([a-zA-Z]+) index.php?nom_categorie=$1&article_approuver=$2
+RewriteRule Articles/([a-zA-Z]+)/([a-zA-Z]+) index.php?nom_categorie=$1&article_approuver=$2
+RewriteRule Articles/([a-zA-Z]+) index.php?nom_categorie=$1
+ErrorDocument 404 https://glitchworlds.com/

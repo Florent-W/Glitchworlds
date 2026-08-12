@@ -13,6 +13,7 @@ if (!empty($_POST['nom']) and !empty($_POST['mdp'])) { // Contrôle formulare
             $_SESSION['pseudo'] = $donnees['pseudo']; // Variable de session
             $_SESSION['id'] = $donnees['id'];
             $_SESSION['statut'] = $donnees['statut'];
+            $_SESSION['token'] = uniqid(rand(), true);
 
             if(isset($donnees['nom_image_background'])) { // Si l'utilisateur à une image de background définie, on met son nom en variable de session
                 $_SESSION['nom_image_background'] = $donnees['nom_image_background'];
@@ -73,11 +74,10 @@ if (!empty($_POST['nom']) and !empty($_POST['mdp'])) { // Contrôle formulare
                     <label for="saveLogin" class="form-check-label">Se souvenir de moi</label>
                 </div>
                 <button type="submit" class="btn btn-success">Envoyer</button>
-
+                <hr>
                 <?php if($erreurConnexion == true) { // Si il y a une erreur dans le formulaire, on affiche un message d'erreur
                      echo '<div class="alert alert-warning" role="alert" style="margin-top: 10px; margin-bottom: 10px;">Les identifiants ne correspondent pas !</div>';
                 } ?>
-                <hr>
                 <div class="form-group">
                     <a href="/inscription.php">S'inscrire</a>
                 </div>
