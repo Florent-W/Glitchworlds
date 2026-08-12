@@ -1,0 +1,14 @@
+
+<!-- Va permettre de charger une deuxème fois le bb code pour la modification -->
+<button type="button" name="italique" id="italique" style="font-style: italic;" data-toggle="tooltip" data-placement="top" title="Italique" onclick="ajoutClickBBcodeFormulaire('[i]', '[/i]', nom_contenu_modifier)">I</button> <!-- Bouton pour ajouter italique -->
+<button type="button" name="gras" id="gras" style="font-weight: bold;" data-toggle="tooltip" data-placement="top" title="Gras" onclick="ajoutClickBBcodeFormulaire('[b]', '[/b]', nom_contenu_modifier)">G</button>
+<button type="button" name="souligne" id="souligne" style="text-decoration: underline;" data-toggle="tooltip" data-placement="top" title="Souligner" onclick="ajoutClickBBcodeFormulaire('[u]', '[/u]', nom_contenu_modifier)">U</button>
+<button type="button" name="citation" id="citation" data-toggle="tooltip" data-placement="top" title="Citation" onclick="ajoutClickBBcodeFormulaire('[citation]', '[/citation]', nom_contenu_modifier)">“</button>
+<button type="button" name="gauche" id="gauche" value="G" data-toggle="tooltip" data-placement="top" title="Placer à gauche" onclick="ajoutClickBBcodeFormulaire('[gauche]', '[/gauche]', nom_contenu_modifier)"><i class="fas fa-align-left"></i></button>
+<button type="button" name="centre" id="center" data-toggle="tooltip" data-placement="top" title="Placer au centre" onclick="ajoutClickBBcodeFormulaire('[center]', '[/center]', nom_contenu_modifier)"><i class="fas fa-align-center"></i></button>
+<button type="button" name="droite" id="droite" value="R" data-toggle="tooltip" data-placement="top" title="Placer à droite" onclick="ajoutClickBBcodeFormulaire('[droite]', '[/droite]', nom_contenu_modifier)"><i class="fas fa-align-right"></i></button>
+<button type="button" name="video" id="video" value="V" data-toggle="tooltip" data-placement="top" title="Vidéo" onclick="ajoutClickBBcodeFormulaire('[video]', '[/video]', nom_contenu_modifier)"><i class="fab fa-youtube"></i></button>
+<button type="button" name="image" id="image" value="I" data-toggle="tooltip" data-placement="top" title="Image par lien" onclick="ajoutClickBBcodeFormulaire('[image]', '[/image]', nom_contenu_modifier)"><i class="far fa-images"></i></button>
+<button type="button" data-placement="top" title="Image" onclick="copieText('ajout_commentaire', 'commentaire')" data-toggle="modal" data-target="#modal"><i class="far fa-image"></i> </button> <!-- Bouton qui va activer la fenetre d'upload -->
+<button type="button" data-placement="top" title="Lien" onclick="copieText('ajout_commentaire', 'commentaireUrl')" data-toggle="modal" data-target="#modalUrl"><i class="fas fa-link"></i> </button> <!-- Bouton qui va activer la fenetre d'url -->
+<button type="button" name="liste" id="liste" value="L" data-toggle="tooltip" data-placement="top" title="Liste" onclick="ajoutClickBBcodeFormulaire('[liste]', '[/liste]', nom_contenu_modifier)"><i class="fas fa-list-ul"></i></button>

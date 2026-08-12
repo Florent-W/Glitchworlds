@@ -1,4 +1,9 @@
 <?php
+require_once('commun/BddJeuClass.php');
+
+// Initialisation
+$bddJeu = new BddJeuClass();
+
 $offsetPageJeu = $nombreJeuParPage * ($pageSelectionner - 1); // Offset pour dire quand on commence à prendre les jeux
 
 if (!empty($_GET['categorie_jeu'])) { // Si la catégorie du jeu est là, on la sélectionne
@@ -32,218 +37,83 @@ if (!empty($_GET['tri'])) { // Si le choix du tri, order by de la recherche est 
     $tri = 3;
     $ordre_tri = "DESC";
 }
+
+$recherche = '';
+$genre = '';
+$plateforme = '';
+$langue = '';
+$onlyFavoris = '';
+$jeuApprouver = 'approuver';
+
+if(isset($_GET['recherche'])) {
+    $recherche = '%' . $_GET['recherche'] . '%';
+}
+if(isset($_GET['genre'])) {
+    $genre = $_GET['genre'];
+}
+if(isset($_GET['plateforme'])) {
+    $plateforme = $_GET['plateforme'];
+}
+if(isset($_GET['langue'])) {
+    $langue = $_GET['langue'];
+}
+if(isset($_GET['favoris'])) {
+    $onlyFavoris = $_GET['favoris'];
+}
+if(isset($_POST['jeu_approuver'])) {
+    if($_POST['jeu_approuver'] != 'tous') { 
+        $jeuApprouver = $_POST['jeu_approuver']; // catégorie de jeu
+    } else {
+        $jeuApprouver = ''; // Si on sélectionne tous les jeux
+    }
+}
 ?>
 <h3 class="text-center">Jeux :</h3>
+    <!-- Selection du type d'article -->
+    <?php if (isset($_SESSION['pseudo']) && $_SESSION['statut'] == "Administrateur") { // Si le statut de l'utilisateur est administrateur, on lui autorise à voir les jeux en attente 
+            ?> <p>
+                <form class="form-inline form-index my-2 my-lg-0 justify-content-center" method="POST">
+                    <div class="form-group">
+                        <select class="form-control" name="jeu_approuver">
+                            <!-- Selection article approuver -->
+                            <option value="approuver" <?php if (isset($_POST['jeu_approuver']) and $_POST['jeu_approuver'] == "approuver") echo 'selected="selected"'; ?>>Approuver</option>
+                            <option value="préapprouver" <?php if (isset($_POST['jeu_approuver']) and $_POST['jeu_approuver'] == "préapprouver") echo 'selected="selected"'; ?>>En attente</option>
+                            <option value="brouillon" <?php if (isset($_POST['jeu_approuver']) and $_POST['jeu_approuver'] == "brouillon") echo 'selected="selected"'; ?>>Brouillon</option> <!-- Les différentes options du select -->
+                            <option value="tous" <?php if (isset($_POST['jeu_approuver']) and $_POST['jeu_approuver'] == "tous") echo 'selected="selected"'; ?>>Tous</option>
+                        </select>
+                    </div>
+                    <div class="form-group ml-2">
+                        <button class="btn btn-outline-success" type="submit">Rechercher</button>
+                    </div>
+                </form>
+               </p>
+            <?php }
+            ?>
 <ul class="list-group" style="top:100px">
     <?php 
-    if (!empty($_GET['categorie_jeu'])) { // Si la catégorie du jeu est là, on la sélectionne
-        if(!empty($_GET['plateforme'])) { // Si la plateforme est là, on la sélectionne
-            if(!empty($_GET['genre'])) { // Si le genre est là, on la sélectionne
-                $reponse = $bdd->prepare('SELECT COUNT(DISTINCT(jeu.id)) as nb_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu LEFT JOIN jeu_lier_genres ON jeu.id = jeu_lier_genres.id_jeu LEFT JOIN genres ON jeu_lier_genres.id_genre = genres.id WHERE jeu.nom LIKE :article and categorie_jeu.nom = :nom_categorie_jeu and jeu.approuver = "approuver" and nom_plateforme = :nom_plateforme and genre = :genre'); // Nombre de jeux trouvés, si aucun, on n'affichera pas
-                $reponse->bindValue('genre', $_GET['genre'], PDO::PARAM_STR);
-            }
-            else { 
-                $reponse = $bdd->prepare('SELECT COUNT(DISTINCT(jeu.id)) as nb_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu WHERE jeu.nom LIKE :article and categorie_jeu.nom = :nom_categorie_jeu and jeu.approuver = "approuver" and nom_plateforme = :nom_plateforme'); // Nombre de jeux trouvés, si aucun, on n'affichera pas
-            }
-        $reponse->bindValue('nom_plateforme', $_GET['plateforme'], PDO::PARAM_STR);
-    }
-        else {
-            if(!empty($_GET['genre'])) { // Si le genre est là, on la sélectionne
-                $reponse = $bdd->prepare('SELECT COUNT(DISTINCT(jeu.id)) as nb_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu LEFT JOIN jeu_lier_genres ON jeu.id = jeu_lier_genres.id_jeu LEFT JOIN genres ON jeu_lier_genres.id_genre = genres.id WHERE jeu.nom LIKE :article and categorie_jeu.nom = :nom_categorie_jeu and jeu.approuver = "approuver" and genre = :genre'); // Nombre de jeux trouvés, si aucun, on n'affichera pas
-                $reponse->bindValue('genre', $_GET['genre'], PDO::PARAM_STR);
-            }
-            else {
-            $reponse = $bdd->prepare('SELECT COUNT(DISTINCT(jeu.id)) as nb_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu WHERE jeu.nom LIKE :article and categorie_jeu.nom = :nom_categorie_jeu and jeu.approuver = "approuver"'); // Nombre de jeux trouvés, si aucun, on n'affichera pas
-            }
-        }
-        $reponse->bindValue('article', '%' . $_GET['recherche'] . '%', PDO::PARAM_STR);
-        $reponse->bindValue('nom_categorie_jeu', $_GET['categorie_jeu'], PDO::PARAM_STR);
-        $reponse->execute();
-        $donnees = $reponse->fetch();
-        $nbJeuTrouver = $donnees['nb_jeu'];
-        $reponse->closeCursor();
-
-        if ($ordre_tri == "DESC") { // On regarde l'ordre du tri qu'on veut
-            if(!empty($_GET['plateforme'])) { // Si la plateforme est là, on la sélectionne
-                if(!empty($_GET['genre'])) { // Si le genre est là, on la sélectionne
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu LEFT JOIN jeu_lier_genres ON jeu.id = jeu_lier_genres.id_jeu LEFT JOIN genres ON jeu_lier_genres.id_genre = genres.id WHERE jeu.nom LIKE :article and categorie_jeu.nom = :nom_categorie_jeu and jeu.approuver = "approuver" and nom_plateforme = :nom_plateforme and genre = :genre GROUP BY jeu.id ORDER BY :tri DESC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                    $reponse->bindValue('genre', $_GET['genre'], PDO::PARAM_STR);
-                }
-                else {
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu WHERE jeu.nom LIKE :article and categorie_jeu.nom = :nom_categorie_jeu and jeu.approuver = "approuver" and nom_plateforme = :nom_plateforme GROUP BY jeu.id ORDER BY :tri DESC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                }
-            $reponse->bindValue('nom_plateforme', $_GET['plateforme'], PDO::PARAM_STR);
-        }
-            else {
-                if(!empty($_GET['genre'])) { // Si le genre est là, on la sélectionne
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu, AVG(avis.note) FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu LEFT JOIN jeu_lier_genres ON jeu.id = jeu_lier_genres.id_jeu LEFT JOIN genres ON jeu_lier_genres.id_genre = genres.id WHERE jeu.nom LIKE :article and categorie_jeu.nom = :nom_categorie_jeu and jeu.approuver = "approuver" and genre = :genre GROUP BY jeu.id ORDER BY :tri DESC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                    $reponse->bindValue('genre', $_GET['genre'], PDO::PARAM_STR);
-                }
-                else {
-                $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu, AVG(avis.note) FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu WHERE jeu.nom LIKE :article and categorie_jeu.nom = :nom_categorie_jeu and jeu.approuver = "approuver" GROUP BY jeu.id ORDER BY :tri DESC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                }
-            }
-            /* $reponse = $bdd->prepare('(SELECT jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y à %Hh%imin%ss") AS date_news FROM jeu WHERE jeu.nom LIKE :article ORDER BY id DESC)
-                                UNION (SELECT news.* FROM news WHERE news.titre LIKE :article ORDER BY id DESC)'); */ // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-            $reponse->bindValue('offsetPageJeu', $offsetPageJeu, PDO::PARAM_INT);
-            $reponse->bindValue('nombreJeuParPage', $nombreJeuParPage, PDO::PARAM_INT);
-            $reponse->bindValue('article', '%' . $_GET['recherche'] . '%', PDO::PARAM_STR);
-            $reponse->bindValue('nom_categorie_jeu', $_GET['categorie_jeu'], PDO::PARAM_STR);
-            $reponse->bindValue('tri', $tri, PDO::PARAM_INT);
-            $reponse->execute();
-        } else {
-            if(!empty($_GET['plateforme'])) { // Si la plateforme est là, on la sélectionne
-                if(!empty($_GET['genre'])) { // Si le genre est là, on la sélectionne
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu LEFT JOIN jeu_lier_genres ON jeu.id = jeu_lier_genres.id_jeu LEFT JOIN genres ON jeu_lier_genres.id_genre = genres.id WHERE jeu.nom LIKE :article and categorie_jeu.nom = :nom_categorie_jeu and jeu.approuver = "approuver" and nom_plateforme = :nom_plateforme and genre = :genre GROUP BY jeu.id ORDER BY :tri ASC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                    $reponse->bindValue('genre', $_GET['genre'], PDO::PARAM_STR);
-                }
-                else {
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu WHERE jeu.nom LIKE :article and categorie_jeu.nom = :nom_categorie_jeu and jeu.approuver = "approuver" and nom_plateforme = :nom_plateforme GROUP BY jeu.id ORDER BY :tri ASC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                }
-                $reponse->bindValue('nom_plateforme', $_GET['plateforme'], PDO::PARAM_STR);
-            }
-            else {
-                if(!empty($_GET['genre'])) { // Si le genre est là, on la sélectionne
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu LEFT JOIN jeu_lier_genres ON jeu.id = jeu_lier_genres.id_jeu LEFT JOIN genres ON jeu_lier_genres.id_genre = genres.id WHERE jeu.nom LIKE :article and categorie_jeu.nom = :nom_categorie_jeu and jeu.approuver = "approuver" and genre = :genre GROUP BY jeu.id ORDER BY :tri ASC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                    $reponse->bindValue('genre', $_GET['genre'], PDO::PARAM_STR);
-                }
-                else {
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu WHERE jeu.nom LIKE :article and categorie_jeu.nom = :nom_categorie_jeu and jeu.approuver = "approuver" GROUP BY jeu.id ORDER BY :tri ASC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                }
-            }
-            /* $reponse = $bdd->prepare('(SELECT jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y à %Hh%imin%ss") AS date_news FROM jeu WHERE jeu.nom LIKE :article ORDER BY id DESC)
-                                    UNION (SELECT news.* FROM news WHERE news.titre LIKE :article ORDER BY id DESC)'); */ // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-            $reponse->bindValue('offsetPageJeu', $offsetPageJeu, PDO::PARAM_INT);
-            $reponse->bindValue('nombreJeuParPage', $nombreJeuParPage, PDO::PARAM_INT);
-            $reponse->bindValue('article', '%' . $_GET['recherche'] . '%', PDO::PARAM_STR);
-            $reponse->bindValue('nom_categorie_jeu', $_GET['categorie_jeu'], PDO::PARAM_STR);
-            $reponse->bindValue('tri', $tri, PDO::PARAM_INT);
-            $reponse->execute();
-        }
-    } else { // Si la catégorie du jeu n'a pas été selectionné, on l'a met à vide
-        if ($ordre_tri == "DESC") { // On regarde l'ordre du tri qu'on veut
-            if(!empty($_GET['plateforme'])) { // Si la plateforme est là, on la sélectionne
-                if(!empty($_GET['genre'])) { // Si le genre est là, on la sélectionne
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, COUNT(DISTINCT(jeu.id)) as nb_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu LEFT JOIN jeu_lier_genres ON jeu.id = jeu_lier_genres.id_jeu LEFT JOIN genres ON jeu_lier_genres.id_genre = genres.id WHERE jeu.nom LIKE :article and jeu.approuver = "approuver" and nom_plateforme = :nom_plateforme and genre = :genre'); // Nombre de jeux trouvés, si aucun, on n'affichera pas
-                    $reponse->bindValue('genre', $_GET['genre'], PDO::PARAM_STR);
-                }
-                else {
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, COUNT(DISTINCT(jeu.id)) as nb_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu WHERE jeu.nom LIKE :article and jeu.approuver = "approuver" and nom_plateforme = :nom_plateforme '); // Nombre de jeux trouvés, si aucun, on n'affichera pas
-                }
-                $reponse->bindValue('nom_plateforme', $_GET['plateforme'], PDO::PARAM_STR); 
-            }
-            else {
-                if(!empty($_GET['genre'])) { // Si le genre est là, on la sélectionne
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, COUNT(DISTINCT(jeu.id)) as nb_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu LEFT JOIN jeu_lier_genres ON jeu.id = jeu_lier_genres.id_jeu LEFT JOIN genres ON jeu_lier_genres.id_genre = genres.id WHERE jeu.nom LIKE :article and jeu.approuver = "approuver" and genre = :genre'); // Nombre de jeux trouvés, si aucun, on n'affichera pas
-                    $reponse->bindValue('genre', $_GET['genre'], PDO::PARAM_STR);
-                }
-                else {
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, COUNT(DISTINCT(jeu.id)) as nb_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu WHERE jeu.nom LIKE :article and jeu.approuver = "approuver"'); // Nombre de jeux trouvés, si aucun, on n'affichera pas
-                }
-            }
-            $reponse->bindValue('article', '%' . $_GET['recherche'] . '%', PDO::PARAM_STR);
-            $reponse->execute();
-            $donnees = $reponse->fetch();
-            $nbJeuTrouver = $donnees['nb_jeu'];
-            $reponse->closeCursor();
-
-            if(!empty($_GET['plateforme'])) { // Si la plateforme est là, on la sélectionne
-                if(!empty($_GET['genre'])) { // Si le genre est là, on la sélectionne
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu LEFT JOIN jeu_lier_genres ON jeu.id = jeu_lier_genres.id_jeu LEFT JOIN genres ON jeu_lier_genres.id_genre = genres.id WHERE jeu.nom LIKE :article and jeu.approuver = "approuver" and nom_plateforme = :nom_plateforme and genre = :genre GROUP BY jeu.id ORDER BY :tri DESC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                    $reponse->bindValue('genre', $_GET['genre'], PDO::PARAM_STR);
-                }
-                else {
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu WHERE jeu.nom LIKE :article and jeu.approuver = "approuver" and nom_plateforme = :nom_plateforme GROUP BY jeu.id ORDER BY :tri DESC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                }
-                $reponse->bindValue('nom_plateforme', $_GET['plateforme'], PDO::PARAM_STR);
-            }
-            else {
-                if(!empty($_GET['genre'])) { // Si le genre est là, on la sélectionne
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu LEFT JOIN jeu_lier_genres ON jeu.id = jeu_lier_genres.id_jeu LEFT JOIN genres ON jeu_lier_genres.id_genre = genres.id WHERE jeu.nom LIKE :article and jeu.approuver = "approuver" and genre = :genre GROUP BY jeu.id ORDER BY :tri DESC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                    $reponse->bindValue('genre', $_GET['genre'], PDO::PARAM_STR);
-                }
-                else {
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu WHERE jeu.nom LIKE :article and jeu.approuver = "approuver" GROUP BY jeu.id ORDER BY :tri DESC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                }
-            }
-            $reponse->bindValue('nombreJeuParPage', $nombreJeuParPage, PDO::PARAM_INT);
-            $reponse->bindValue('offsetPageJeu', $offsetPageJeu, PDO::PARAM_INT);
-            $reponse->bindValue('article', '%' . $_GET['recherche'] . '%', PDO::PARAM_STR);
-            $reponse->bindValue('tri', $tri, PDO::PARAM_INT);
-            $reponse->execute();
-        } else {
-            if(!empty($_GET['plateforme'])) { // Si la plateforme est là, on la sélectionne
-                if(!empty($_GET['genre'])) { // Si le genre est là, on la sélectionne
-                    $reponse = $bdd->prepare('SELECT COUNT(DISTINCT(jeu.id)) as nb_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu LEFT JOIN jeu_lier_genres ON jeu.id = jeu_lier_genres.id_jeu LEFT JOIN genres ON jeu_lier_genres.id_genre = genres.id WHERE jeu.nom LIKE :article and jeu.approuver = "approuver" and nom_plateforme = :nom_plateforme and genre = :genre'); // Nombre de jeux trouvés, si aucun, on n'affichera pas
-                    $reponse->bindValue('genre', $_GET['genre'], PDO::PARAM_STR);
-                }
-                else {
-                    $reponse = $bdd->prepare('SELECT COUNT(DISTINCT(jeu.id)) as nb_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu WHERE jeu.nom LIKE :article and jeu.approuver = "approuver" and nom_plateforme = :nom_plateforme'); // Nombre de jeux trouvés, si aucun, on n'affichera pas
-                }
-            $reponse->bindValue('nom_plateforme', $_GET['plateforme'], PDO::PARAM_STR);
-            }
-            else {
-                if(!empty($_GET['genre'])) { // Si le genre est là, on la sélectionne
-                    $reponse = $bdd->prepare('SELECT COUNT(DISTINCT(jeu.id)) as nb_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu LEFT JOIN jeu_lier_genres ON jeu.id = jeu_lier_genres.id_jeu LEFT JOIN genres ON jeu_lier_genres.id_genre = genres.id WHERE jeu.nom LIKE :article and jeu.approuver = "approuver" and genre = :genre'); // Nombre de jeux trouvés, si aucun, on n'affichera pas
-                    $reponse->bindValue('genre', $_GET['genre'], PDO::PARAM_STR);
-                }
-                else {
-                    $reponse = $bdd->prepare('SELECT COUNT(DISTINCT(jeu.id)) as nb_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu WHERE jeu.nom LIKE :article and jeu.approuver = "approuver"'); // Nombre de jeux trouvés, si aucun, on n'affichera pas
-                }
-            }
-            $reponse->bindValue('article', '%' . $_GET['recherche'] . '%', PDO::PARAM_STR);
-            $reponse->execute();
-            $donnees = $reponse->fetch();
-            $nbJeuTrouver = $donnees['nb_jeu'];
-            $reponse->closeCursor();
-
-            if(!empty($_GET['plateforme'])) { // Si la plateforme est là, on la sélectionne
-                if(!empty($_GET['genre'])) { // Si le genre est là, on la sélectionne
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu LEFT JOIN jeu_lier_genres ON jeu.id = jeu_lier_genres.id_jeu LEFT JOIN genres ON jeu_lier_genres.id_genre = genres.id WHERE jeu.nom LIKE :article and jeu.approuver = "approuver" and nom_plateforme = :nom_plateforme and genre = :genre GROUP BY jeu.id ORDER BY :tri ASC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                    $reponse->bindValue('genre', $_GET['genre'], PDO::PARAM_STR);
-                }
-                else {
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu WHERE jeu.nom LIKE :article and jeu.approuver = "approuver" and nom_plateforme = :nom_plateforme GROUP BY jeu.id ORDER BY :tri ASC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                }
-            $reponse->bindValue('nom_plateforme', $_GET['plateforme'], PDO::PARAM_STR);
-            }
-            else {
-                if(!empty($_GET['genre'])) { // Si le genre est là, on la sélectionne
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu LEFT JOIN jeu_lier_genres ON jeu.id = jeu_lier_genres.id_jeu LEFT JOIN genres ON jeu_lier_genres.id_genre = genres.id WHERE jeu.nom LIKE :article and jeu.approuver = "approuver" and genre = :genre GROUP BY jeu.id ORDER BY :tri ASC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                    $reponse->bindValue('genre', $_GET['genre'], PDO::PARAM_STR);
-                }
-                else {
-                    $reponse = $bdd->prepare('SELECT AVG(avis.note) AS moyenne_note, COUNT(DISTINCT(avis.id)) AS nombre_avis, jeu.*, DATE_FORMAT(date_sortie, "%d %M %Y") AS date_jeu FROM jeu LEFT JOIN categorie_jeu ON jeu.id_categorie = categorie_jeu.id LEFT JOIN jeu_lier_plateformes ON jeu.id = jeu_lier_plateformes.id_jeu LEFT JOIN plateformes ON jeu_lier_plateformes.id_plateforme = plateformes.id LEFT JOIN avis ON jeu.id = avis.id_jeu WHERE jeu.nom LIKE :article and jeu.approuver = "approuver" GROUP BY jeu.id ORDER BY :tri ASC LIMIT :nombreJeuParPage OFFSET :offsetPageJeu'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
-                }
-            }
-            $reponse->bindValue('nombreJeuParPage', $nombreJeuParPage, PDO::PARAM_INT);
-            $reponse->bindValue('offsetPageJeu', $offsetPageJeu, PDO::PARAM_INT);
-            $reponse->bindValue('article', '%' . $_GET['recherche'] . '%', PDO::PARAM_STR);
-            $reponse->bindValue('tri', $tri, PDO::PARAM_INT);
-            $reponse->execute();
-        }
-    }
+    $listeJeux = $bddJeu->selectionListeJeux($nombreJeuParPage, $offsetPageJeu, $recherche, $tri, $genre, $plateforme, $categorie_jeu, $ordre_tri, $jeuApprouver, $onlyFavoris, $langue);
+    $nbJeuTrouver = $listeJeux['nb_jeu'];
 ?>
-        <?php
+    <?php
     // Si les jeu sont trouvé, on les affiche
     if ($nbJeuTrouver > 0) {
         $positionJeu = 0; // On va voir la place du jeu et une fois sur deux, il sera en couleur 
 
-        while ($donnees = $reponse->fetch()) {
+        foreach($listeJeux['donnees'] as $jeu) {
     ?>
             <!-- Liste jeu -->
             <div class="liste-news-jeu">
             <?php
             if ($positionJeu % 2 == 0) { // Un jeu sur deux sera en couleur
             ?>
-                <a href="/jeu/<?php echo $donnees['url']; ?>-<?php echo $donnees['id']; ?>" style="text-decoration-color: black; text-decoration: none;" class="list-group-item justify-content-center list-group-item-secondary liste-item-sans-bordure">
+                <a href="/jeu/<?php echo $jeu['url']; ?>-<?php echo $jeu['id']; ?>" style="text-decoration-color: black; text-decoration: none;" class="list-group-item justify-content-center list-group-item-secondary liste-item-sans-bordure">
                     <!-- L'url est composé à l'aide de l'url rewriting, de l'url marqué dans la base de données ainsi que de l'id -->
                 <?php } else {
                 ?>
-                    <a href="/jeu/<?php echo $donnees['url']; ?>-<?php echo $donnees['id']; ?>" style="text-decoration-color: black; text-decoration: none;" class="list-group-item justify-content-center list-group-item-light liste-item-sans-bordure">
+                    <a href="/jeu/<?php echo $jeu['url']; ?>-<?php echo $jeu['id']; ?>" style="text-decoration-color: black; text-decoration: none;" class="list-group-item justify-content-center list-group-item-light liste-item-sans-bordure">
                     <?php
                 } ?>
-                    <img src="/Jeux/<?php echo $donnees['url']; ?>/miniature/<?php echo $donnees['nom_miniature']; ?>" onerror="this.oneerror=null; this.src='/1.jpg';" class="img-thumbnail img-fluid float-md-left" style="width:auto; height: auto; max-width:200 px; max-height:320px; background-color:transparent;"> <!-- Image à gauche et si image non trouvée, elle est remplacée par une image par défaut, titre à droite -->
+                    <img src="/Jeux/<?php echo $jeu['url']; ?>/miniature/<?php echo $jeu['nom_miniature']; ?>" onerror="this.oneerror=null; this.src='/1.jpg';" class="img-thumbnail img-fluid float-md-left" style="width:auto; height: auto; max-width:200 px; max-height:320px; background-color:transparent;"> <!-- Image à gauche et si image non trouvée, elle est remplacée par une image par défaut, titre à droite -->
                     <?php /*
                     if (!file_exists('Jeux' . '/' . $donnees['nom'] . '/' . 'miniature')) {
                         mkdir('Jeux' . '/' . $donnees['nom'] . '/' . 'miniature', 0777, true);
@@ -254,32 +124,35 @@ if (!empty($_GET['tri'])) { // Si le choix du tri, order by de la recherche est 
                     <div class="row">
                         <div class="col">
                             <?php /* ?><a href="news/<?php echo $donnees['url']; ?>-<?php echo $donnees['id']; ?>" style="text-decoration-color: black"> <?php */ ?>
-                            <h1 class="list-group-item-heading text-body"><?php echo $donnees['nom']; ?></h1> <!-- Nom du jeu -->
+                            <h1 class="list-group-item-heading text-body"><?php echo $jeu['nom']; ?></h1> <!-- Nom du jeu -->
                         </div>
                         <div class="col">
-                            <p class="list-group-item-text pull-right text-right lead"><?php echo $donnees['date_jeu']; ?></p> <!-- Date du jeu -->
+                            <p class="list-group-item-text pull-right text-right lead"><?php echo $jeu['date_jeu']; ?></p> <!-- Date du jeu -->
                         </div>
                     </div>
                     <div class="row">
                         <div class="col">
-                            <p class="list-group-item-text pull-right lead" style="word-wrap: break-word"><?php if($donnees['description'] != "") { echo htmlspecialchars($donnees['description']); } else { echo tronquerTexte(remplacementBBCode($donnees['contenu'], false, true), 150, "jeu/" . $donnees['url'] . "-" . $donnees['id']); } ?> </p> <!-- Contenu, on veut supprimer aussi les balises -->
+                            <p class="list-group-item-text pull-right lead" style="word-wrap: break-word"><?php if($jeu['description'] != "") { echo htmlspecialchars($listeJeux['description']); } else { echo tronquerTexte(remplacementBBCode($jeu['contenu'], false, true), 150, "jeu/" . $jeu['url'] . "-" . $jeu['id']); } ?> </p> <!-- Contenu, on veut supprimer aussi les balises -->
                         </div>
                     </div>
-                    <?php if(isset($donnees['moyenne_note'])) { ?>
+                    <?php if(isset($jeu['moyenne_note'])) { ?>
                     <div class="row">
                         <div class="col">
-                            <p class="list-group-item-text pull-right text-right lead"><span style="border-radius: 50%; border: solid; background-color: LightGreen; padding: 8px; width: 51px; height: 51px; display: inline-block; text-align: center;"><?php echo round($donnees['moyenne_note'], 1); ?></span>  <?php echo $donnees['nombre_avis'] . ' avis'; ?></p> <!-- Moyenne des notes arrondis si il y en a pour un jeu -->
+                            <p class="list-group-item-text pull-right text-right lead"><span style="border-radius: 50%; border: solid; background-color: LightGreen; padding: 8px; width: 51px; height: 51px; display: inline-block; text-align: center;"><?php echo round($jeu['moyenne_note'], 1); ?></span>  <?php if($jeu['nombre_note'] > 1 ) echo $jeu['nombre_note'] . ' notes'; else echo $jeu['nombre_note'] . ' note'; ?></p> <!-- Moyenne des notes arrondis si il y en a pour un jeu -->
                         </div>
                     </div>
                     <?php } ?>
                     </a>
 
-                    <?php if (isset($_SESSION['pseudo']) && $_SESSION['statut'] == "Administrateur") { // Si le statut de l'utilisateur est administrateur, on lui autorise à modifier une news 
+                    <?php if (isset($_SESSION['pseudo']) && $_SESSION['statut'] == "Administrateur" || isset($_SESSION['id']) && $_SESSION['id'] == $jeu['id_auteur_presentation']) { // Si le statut de l'utilisateur est administrateur, on lui autorise à modifier une news 
                     ?>
-                        <?php /* ?> <a href="modifier_news/<?php echo $donnees['url']; ?>-<?php echo $donnees['id']; ?>">  <?php */ ?>
-                        <div class="row text-right" style="margin-bottom: 10px; margin-top: 10px;">
-                            <div class="col">
-                                <form class="form" method="post" action="/modifier_jeu/<?php echo $donnees['url']; ?>-<?php echo $donnees['id']; ?>">
+                        <div class="row" style="margin-bottom: 10px; margin-top: 10px;">
+                        <form class="form" method="post" action="/modifier_jeu/<?php echo $jeu['url']; ?>-<?php echo $jeu['id']; ?>">
+                            <div class="col text-left"></div>
+                        </form>    
+                        <div class="col text-right">
+                                <form class="form" method="post" action="/modifier_jeu/<?php echo $jeu['url']; ?>-<?php echo $jeu['id']; ?>">
+                                    <button id="approuver_jeu" class="btn btn-primary"><?php if($jeu['approuver'] == 'approuver') { echo 'Approuver'; } else if($jeu['approuver'] == 'préapprouver') { echo 'En attente'; } else { echo 'Brouillon'; } ?></button>
                                     <button type="submit" id="modifier_jeu" class="btn btn-info" title="Modifier jeu">Modifier Jeu</button> <!-- Bouton modif -->
                                 </form>
                             </div>
@@ -337,7 +210,7 @@ if (!empty($_GET['tri'])) { // Si le choix du tri, order by de la recherche est 
             <li class="page-item">
                 <a class="page-link changement-page" href="<?php if ($nom_page == "/recherche.php") echo "/recherche.php";
                                                             else if ($nom_page == "/liste_jeu.php") echo "/liste_jeu.php"; ?>?recherche=<?php echo $_GET['recherche'];
-                                                                                                                                        if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=1" aria-label="PremierePage">
+                                                                                                                                        if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if(isset($_GET['langue'])) echo '&langue=' . $_GET['langue']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=1" aria-label="PremierePage">
                     <span aria-hidden="true">
                         <<</span> <span class="sr-only">Premier
                     </span> <!-- Premiere page -->
@@ -346,7 +219,7 @@ if (!empty($_GET['tri'])) { // Si le choix du tri, order by de la recherche est 
             <li class="page-item">
                 <a class="page-link changement-page" href="<?php if ($nom_page == "/recherche.php") echo "/recherche.php";
                                                             else if ($nom_page == "/liste_jeu.php") echo "/liste_jeu.php"; ?>?recherche=<?php echo $_GET['recherche'];
-                                                                                                                                        if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $pageSelectionner - 1; ?>" aria-label="Previous">
+                                                                                                                                        if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if(isset($_GET['langue'])) echo '&langue=' . $_GET['langue']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $pageSelectionner - 1; ?>" aria-label="Previous">
                     <span aria-hidden="true">
                         <</span> <span class="sr-only">Précédent
                     </span> <!-- Précedent -->
@@ -360,14 +233,14 @@ if (!empty($_GET['tri'])) { // Si le choix du tri, order by de la recherche est 
             <li class="page-item active">
                 <a class="page-link numero-page" href="<?php if ($nom_page == "/recherche.php") echo "/recherche.php";
                                                         else if ($nom_page == "/liste_jeu.php") echo "/liste_jeu.php"; ?>?recherche=<?php echo $_GET['recherche'];
-                                                                                                                                    if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=1">1</a>
+                                                                                                                                    if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if(isset($_GET['langue'])) echo '&langue=' . $_GET['langue']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=1">1</a>
             </li>
         <?php
         } else { ?>
             <li class="page-item">
                 <a class="page-link numero-page" href="<?php if ($nom_page == "/recherche.php") echo "/recherche.php";
                                                         else if ($nom_page == "/liste_jeu.php") echo "/liste_jeu.php"; ?>?recherche=<?php echo $_GET['recherche'];
-                                                                                                                                    if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=1">1</a>
+                                                                                                                                    if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if(isset($_GET['langue'])) echo '&langue=' . $_GET['langue']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=1">1</a>
             </li>
         <?php }
         /*
@@ -397,7 +270,7 @@ if (!empty($_GET['tri'])) { // Si le choix du tri, order by de la recherche est 
                 <!-- Page précédente -->
                 <a class="page-link numero-page" href="<?php if ($nom_page == "/recherche.php") echo "/recherche.php";
                                                         else if ($nom_page == "/liste_jeu.php") echo "/liste_jeu.php"; ?>?recherche=<?php echo $_GET['recherche'];
-                                                                                                                                    if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $pageSelectionner - 1; ?>"><?php echo $pageSelectionner - 1; ?></a>
+                                                                                                                                    if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if(isset($_GET['langue'])) echo '&langue=' . $_GET['langue']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $pageSelectionner - 1; ?>"><?php echo $pageSelectionner - 1; ?></a>
             </li>
         <?php
         }
@@ -407,7 +280,7 @@ if (!empty($_GET['tri'])) { // Si le choix du tri, order by de la recherche est 
             <li class="page-item active">
                 <a class="page-link numero-page" href="<?php if ($nom_page == "/recherche.php") echo "/recherche.php";
                                                         else if ($nom_page == "/liste_jeu.php") echo "/liste_jeu.php"; ?>?recherche=<?php echo $_GET['recherche'];
-                                                                                                                                    if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $pageSelectionner; ?>"><?php echo $pageSelectionner; ?></a>
+                                                                                                                                    if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if(isset($_GET['langue'])) echo '&langue=' . $_GET['langue']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $pageSelectionner; ?>"><?php echo $pageSelectionner; ?></a>
             </li>
         <?php
         }
@@ -418,7 +291,7 @@ if (!empty($_GET['tri'])) { // Si le choix du tri, order by de la recherche est 
                 <!-- Page suivante -->
                 <a class="page-link numero-page" href="<?php if ($nom_page == "/recherche.php") echo "/recherche.php";
                                                         else if ($nom_page == "/liste_jeu.php") echo "/liste_jeu.php"; ?>?recherche=<?php echo $_GET['recherche'];
-                                                                                                                                    if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $pageSelectionner + 1; ?>"><?php echo $pageSelectionner + 1; ?></a>
+                                                                                                                                    if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if(isset($_GET['langue'])) echo '&langue=' . $_GET['langue']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $pageSelectionner + 1; ?>"><?php echo $pageSelectionner + 1; ?></a>
             </li>
             ...
         <?php
@@ -429,7 +302,7 @@ if (!empty($_GET['tri'])) { // Si le choix du tri, order by de la recherche est 
             <li class="page-item active">
                 <a class="page-link numero-page" href="<?php if ($nom_page == "/recherche.php") echo "/recherche.php";
                                                         else if ($nom_page == "/liste_jeu.php") echo "/liste_jeu.php"; ?>?recherche=<?php echo $_GET['recherche'];
-                                                                                                                                    if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $nbPageTotal; ?>"><?php echo $nbPageTotal; ?></a>
+                                                                                                                                    if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if(isset($_GET['langue'])) echo '&langue=' . $_GET['langue']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $nbPageTotal; ?>"><?php echo $nbPageTotal; ?></a>
             </li>
         <?php
         } else if ($pageSelectionner <= $nbPageTotal && $nbPageTotal > 1) { // Si la page selectionné n'est pas la dernière ni la première, on ne la met pas active 
@@ -437,7 +310,7 @@ if (!empty($_GET['tri'])) { // Si le choix du tri, order by de la recherche est 
             <li class="page-item">
                 <a class="page-link numero-page" href="<?php if ($nom_page == "/recherche.php") echo "/recherche.php";
                                                         else if ($nom_page == "/liste_jeu.php") echo "/liste_jeu.php"; ?>?recherche=<?php echo $_GET['recherche'];
-                                                                                                                                    if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $nbPageTotal; ?>"><?php echo $nbPageTotal; ?></a>
+                                                                                                                                    if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if(isset($_GET['langue'])) echo '&langue=' . $_GET['langue']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $nbPageTotal; ?>"><?php echo $nbPageTotal; ?></a>
             </li>
         <?php }
 
@@ -461,7 +334,7 @@ if (!empty($_GET['tri'])) { // Si le choix du tri, order by de la recherche est 
             <li class="page-item">
                 <a class="page-link changement-page" href="<?php if ($nom_page == "/recherche.php") echo "/recherche.php";
                                                             else if ($nom_page == "/liste_jeu.php") echo "/liste_jeu.php"; ?>?recherche=<?php echo $_GET['recherche'];
-                                                                                                                                        if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $pageSelectionner + 1; ?>" aria-label="Next">
+                                                                                                                                        if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if(isset($_GET['langue'])) echo '&langue=' . $_GET['langue']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $pageSelectionner + 1; ?>" aria-label="Next">
                     <span aria-hidden="true">></span>
                     <span class="sr-only">Suivant</span> <!-- Suivant -->
                 </a>
@@ -469,7 +342,7 @@ if (!empty($_GET['tri'])) { // Si le choix du tri, order by de la recherche est 
             <li class="page-item">
                 <a class="page-link changement-page" href="<?php if ($nom_page == "/recherche.php") echo "/recherche.php";
                                                             else if ($nom_page == "/liste_jeu.php") echo "/liste_jeu.php"; ?>?recherche=<?php echo $_GET['recherche'];
-                                                                                                                                        if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $nbPageTotal; ?>" aria-label="DernierePage">
+                                                                                                                                        if (isset($_GET['categorie'])) echo '&categorie=' . $_GET['categorie']; ?><?php if (isset($_GET['categorie_jeu'])) echo '&categorie_jeu=' . $_GET['categorie_jeu']; ?><?php if (isset($_GET['plateforme'])) echo '&plateforme=' . $_GET['plateforme']; ?><?php if (isset($_GET['genre'])) echo '&genre=' . $_GET['genre']; ?><?php if(isset($_GET['langue'])) echo '&langue=' . $_GET['langue']; ?><?php if (isset($_GET['tri'])) echo '&tri=' . $_GET['tri']; ?>&page=<?php echo $nbPageTotal; ?>" aria-label="DernierePage">
                     <span aria-hidden="true">
                         >></span> <span class="sr-only">Dernier
                     </span> <!-- Derniere page -->

@@ -1,5 +1,4 @@
 <?php
-$title = "Liste des jeux";
 include('Header.php');
 ?>
 

@@ -32,7 +32,7 @@ $offsetPageArticle = $nombreArticleParPage * ($pageSelectionner - 1); // Offset 
     <?php
     $reponse = $bdd->prepare('SELECT COUNT(*) as nb_article FROM article_lier_jeu INNER JOIN jeu ON article_lier_jeu.id_jeu = jeu.id INNER JOIN article ON article_lier_jeu.id_article = article.id WHERE article.nom_categorie = :nom_categorie AND jeu.nom = :nom_jeu AND article.approuver = "Approuver" AND article.titre LIKE :article'); // Nombre de News trouvés, si aucun, on n'affichera pas
     $reponse->bindValue('nom_categorie', $nomCategorie, PDO::PARAM_STR);
-     $reponse->bindValue('nom_jeu', $nom_jeu, PDO::PARAM_STR);
+    $reponse->bindValue('nom_jeu', $nom_jeu, PDO::PARAM_STR);
     $reponse->bindValue('article', '%' . $rechercheArticle . '%', PDO::PARAM_STR);
     $reponse->execute();
     $donnees = $reponse->fetch();

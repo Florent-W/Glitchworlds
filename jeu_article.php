@@ -8,7 +8,7 @@
 <form class="form-inline my-2 my-lg-0 justify-content-center" id="form_recherche" method="POST">
     <!-- Recherche -->
     <div class="form-group" style="margin: 5px;">
-        <input class="form-control" type="search" onclick="chargerJeuOngletArticleRecherche()" value="<?php if (isset($_POST['recherche'])) echo htmlspecialchars($_POST['recherche']); ?>" placeholder="Rechercher" name="recherche" id="rechercheArticle" aria-label="Rechercher"> <!-- Recherche -->
+        <input class="form-control" type="search" value="<?php if (isset($_POST['recherche'])) echo htmlspecialchars($_POST['recherche']); ?>" placeholder="Rechercher" name="recherche" id="rechercheArticle" aria-label="Rechercher"> <!-- Recherche -->
     </div>
     <?php
     ?>

@@ -21,6 +21,10 @@ include('Header.php');
                         <label for="description">Description de 150 caractères max (non obligatoire)</label>
                         <input type="text" maxlenght="150" name="description" id="description" value="<?php if (!empty($_POST['description'])) echo $_POST['description']; ?>" class="form-control"> <!-- On conserve les valeurs au cas où il y a une erreur dans l'envoi -->
                     </div>
+                    <div class="form-group" id="template_group">
+                        <label for="template">Template</label>
+                        <button type="button" class="btn btn-outline-secondary btn_jeu" name="template" id="template" value="T" data-toggle="tooltip" data-placement="top" title="Présentation jeu Pokémon" onclick="ajoutTexteFormulaireTemplate('Presentation_Pokemon')">Présentation Pokémon</button>
+                    </div>
                     <div class="form-group">
                         <label for="contenu">Contenu</label>
                         <div class="row" style="margin-bottom:10px;">
@@ -41,6 +45,9 @@ include('Header.php');
                         <hr>
                         <div name="previsualisationContenu" id="previsualisationContenu" style="white-space: pre-wrap;"></div>
                     </div>
+                    <script>
+                        montrerMenuTemplate();
+                    </script>   
                     <div class="form-group">
                         <label for="nom">Date de sortie</label>
                         <input type="date" name="date_sortie" id="date_sortie" value="<?php if (!empty($_POST['date_sortie'])) echo $_POST['date_sortie']; ?>" required onchange="controleTexteInput(this, 'dateSortieIndication', 'date')" class="form-control"> <!-- On conserve les valeurs au cas où il y a une erreur dans l'envoi -->
@@ -109,6 +116,21 @@ include('Header.php');
                         <label id="genresIndication" class="text-danger"><?php if (isset($_POST['genres'])) echo "Le genre du jeu n'a pas été trouvé"; ?></label> <!-- Indication genre du jeu, il sera indiqué si le formulaire a déjà été soumis mais qu'il y a une erreur -->
                     </div>
 
+                    <script>
+                        autoCompletion("langues", "Langues");
+
+                        var listeTags = tagsCreationArticles('liste_langues', 'lierLangues'); // On récupère les tags des langues
+                    </script>
+
+                    <div class="form-group">
+                        <!-- Langue -->
+                        <label for="langues">Langues (non obligatoire)</label>
+                        <div name="lierLangues" id="lierLangues" style="position: relative; border : 1px solid;">
+                            <input type="text" name="langues" id="langues" style="border: 0;" value="<?php if (!empty($_POST['langues'])) echo $_POST['langues'] ?>" class="form-control" style="display: inline-block;"> <!-- On conserve les valeurs au cas où il y a une erreur dans l'envoi -->
+                        </div>
+                        <label id="languesIndication" class="text-danger"><?php if (isset($_POST['langues'])) echo "La langue du jeu n'a pas été trouvé"; ?></label> <!-- Indication langue du jeu, il sera indiqué si le formulaire a déjà été soumis mais qu'il y a une erreur -->
+                    </div>
+
                     <div class="form-group">
                         <label for="video_background">Vidéo en Arrière plan / URL Youtube (non obligatoire)</label>
                         <input type="text" name="video_background" id="video_background" value="<?php if (!empty($_POST['video_background'])) echo $_POST['video_background'] ?>" class="form-control"> <!-- On conserve les valeurs au cas où il y a une erreur dans l'envoi -->
@@ -154,7 +176,18 @@ include('Header.php');
                     $donnees2 = $reponse2->fetch();
                     ?>
                     <input type="hidden" name="auteur" id="auteur" value="<?php echo $donnees2['id']; ?>">
-
+                      <!-- On récupère le statut de l'utilisateur et si le statut de l'utilisateur est suffisant, on approuve le jeu, sinon le jeu est rédigé mais il faudra l'approuver après -->
+                      <div class="form-group">
+                        <label for="jeu_approuver">Etat de la fiche du jeu</label>
+                        <select class="form-control" name="jeu_approuver" id="jeu_approuver" required class="form-control">
+                            <?php if ($donnees2['statut'] == "Administrateur") { // On affiche l'option pour approuver un article directement que si on est administrateur 
+                            ?>
+                                <option value="approuver" <?php if (isset($_POST['jeu_approuver']) and $_POST['jeu_approuver'] == "approuver") echo 'selected="selected"'; ?>>Approuver</option> <!-- Les différentes options du select -->
+                            <?php } ?>
+                            <option value="préapprouver" <?php if (isset($_POST['jeu_approuver']) and $_POST['jeu_approuver'] == "préapprouver") echo 'selected="selected"'; ?>>En attente</option> <!-- Les différentes options du select -->
+                            <option value="brouillon" <?php if (isset($_POST['jeu_approuver']) and $_POST['jeu_approuver'] == "Brouillon") echo 'selected="selected"'; ?>>Brouillon</option> <!-- Les différentes options du select -->
+                        </select>
+                    </div>
                     <button type="submit" id="btn_envoi" class="btn btn-success">Envoyer</button>
                 <?php } else if (!isset($_SESSION['pseudo'])) {
                 ?><div class="alert alert-warning" role="alert" style="margin-top: 10px;">Veuillez vous <a href="/connexion.php">connecter</a> pour écrire un jeu.</div> <?php
@@ -163,7 +196,15 @@ include('Header.php');
         </div>
     </div>
 
-    <?php
+
+<?php
+// On regarde si on est dans le traitement, si non, on empêche le changement de page sans alerte
+if((empty($_POST) || (empty($_POST['titre']) && empty($_POST['jeu']) && empty($_POST['data']))) && isset($_SESSION['pseudo'])) {
+    echo '<script>
+    popupChangementDePage(); 
+    </script>';
+}     
+
     include('footer.php');
     ?>
     <?php
@@ -223,7 +264,27 @@ if (!empty($_POST['liste_genres'])) { // On cherche pour voir si le jeu est lié
     }
 }
 
-    if (!empty($_POST['nom']) and !empty($_POST['contenu']) and !empty($_POST['date_sortie']) and !empty($_POST['categorie']) and (empty($_POST['plateformes'])) or (!empty($_POST['plateformes']) and count($id_plateforme_trouver) > 0) and (empty($_POST['genres'])) or (!empty($_POST['genres']) and count($id_genre_trouver) > 0) and !empty($_FILES['miniature']['tmp_name']) and !empty($_POST['presentation'])) { // Traitement
+if (!empty($_POST['liste_langues'])) { // Servira si il y a une erreur, on split les langues et on les reprend
+    $liste_langues = $_POST['liste_langues'];
+    $liste_langues_splitter = explode(',', $liste_langues); // On split les differentes langues
+}
+
+if (!empty($_POST['liste_langues'])) { // On cherche pour voir si le jeu est lié à des langues, si oui on regarde si les langues entré correspond à un genre sinon on redemande de retaper la langue
+    $langue_trouver = array();
+    $id_langue_trouver = array();
+
+    for ($i = 0; $i < count($liste_langues_splitter); $i++) { // On cherche pour chaque langue son id
+        $reponse = $bdd->prepare('SELECT id FROM langues WHERE langue = :langue');
+        $reponse->execute(array('langue' => $liste_langues_splitter[$i]));
+        $nombre_id_langue_trouver = $reponse->rowCount();
+        array_push($id_langue_trouver, $nombre_id_langue_trouver);
+        $donnees = $reponse->fetch();
+        array_push($langue_trouver, $donnees['id']);
+        $reponse->closeCursor();
+    }
+}
+
+    if (!empty($_POST['nom']) and !empty($_POST['contenu']) and !empty($_POST['date_sortie']) and !empty($_POST['categorie']) and isset($_POST['jeu_approuver']) and (empty($_POST['plateformes'])) or (!empty($_POST['plateformes']) and count($id_plateforme_trouver) > 0) and (empty($_POST['genres'])) or (!empty($_POST['genres']) and count($id_genre_trouver) > 0) and (empty($_POST['langues'])) or (!empty($_POST['langues']) and count($id_langue_trouver) > 0) and !empty($_FILES['miniature']['tmp_name']) and !empty($_POST['presentation'])) { // Traitement
         $nom = $_POST['nom'];
         $url = EncodageTitreEnUrl($nom);
         $description = $_POST['description'];
@@ -232,7 +293,7 @@ if (!empty($_POST['liste_genres'])) { // On cherche pour voir si le jeu est lié
         $nom_categorie = $_POST['categorie'];
         $presentation = $_POST['presentation'];
         $video_background = $_POST['video_background'];
-        $approuver = 'approuver';
+        $approuver = $_POST['jeu_approuver'];
         $nom_miniature = $_FILES['miniature']['name'];
 
         $tailleImage = getimagesize($_FILES['miniature']['tmp_name']); // Récupération taille de l'image uploadée
@@ -289,6 +350,15 @@ if (!empty($_POST['liste_genres'])) { // On cherche pour voir si le jeu est lié
         if ($id_genre_trouver[$i] == 1) {
             $reponse = $bdd->prepare('INSERT INTO jeu_lier_genres (id_jeu, id_genre) VALUES (:id_jeu, :id_genre) '); // Insertion de la liste des genre lié au jeu
             $reponse->execute(array('id_jeu' => $id_jeu, 'id_genre' => $genre_trouver[$i]));
+        }
+    }
+}
+if(!empty($_POST['liste_langues'])) {
+    // Traitement langues des jeux
+    for ($i = 0; $i < count($langue_trouver); $i++) { // Parcours des différents id des langues
+        if ($id_langue_trouver[$i] == 1) {
+            $reponse = $bdd->prepare('INSERT INTO jeu_lier_langues (id_jeu, id_langue) VALUES (:id_jeu, :id_langue) '); // Insertion de la liste des langues lié au jeu
+            $reponse->execute(array('id_jeu' => $id_jeu, 'id_langue' => $langue_trouver[$i]));
         }
     }
 }

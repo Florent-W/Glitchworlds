@@ -17,12 +17,34 @@ function tronquerTexte($texte, $nombreCaractereMax, $lien)
         if ($lien != "") { // Si le lien n'est pas vide, surtout pour le carousel
             return $texte . "...<p>[Lire la suite]</p>";
         } else {
-            return $texte; // Texte sans lire
+            return $texte . "..."; // Texte sans lire
         }
         // return $texte . ' <a href="'. $lien . '">[Lire la suite]</a>';
     } else {
         return $texte;
     }
+}
+
+// Donne le html et le texte qui doit s'afficher pour les j'aimes et les personnes qui en ont mis
+function aimeCommentaireTexte($arrayCommentaires) {
+    $liste_personnes_aime = '';
+
+    for($i=0; $i<min(9, $arrayCommentaires[0]['nombre_aime']); $i++) {
+        if($i > 0) {
+            $liste_personnes_aime .= ', ';
+        }
+        $liste_personnes_aime .= $arrayCommentaires[$i]['pseudo'];
+    }
+    // On regarde si il y a un aime sur le commentaire pour compléter la phrase
+    if($arrayCommentaires[0]['nombre_aime'] == 1) {
+        $liste_personnes_aime .= ' a aimé ce commentaire.';
+    } else if($arrayCommentaires[0]['nombre_aime'] > 1 && $arrayCommentaires[0]['nombre_aime'] <= 9) {
+        $liste_personnes_aime .= ' ont aimé ce commentaire.';
+    } else if($arrayCommentaires[0]['nombre_aime'] > 9) {
+        $liste_personnes_aime .= ' et bien d\'autres utilisateurs aiment ce commentaire.';
+    }
+
+    return $liste_personnes_aime;
 }
 
 // Prend en paramètre une url d'une vidéo youtube et permet de récupérer l'id de la vidéo
@@ -67,6 +89,15 @@ function redimensionImage($largeur, $hauteur, $tailleLargeurAutoriser, $tailleHa
     while ($hauteur > $tailleHauteurAutoriser) {
         $hauteur = $hauteur / 1.5;
     }
+}
+
+// Fonction qui permet d'arrondir les notes
+function arrondirNote($nombre, $precision = 0.5) {
+    if ($nombre >= 4.5 && $nombre < 5) {
+        return 4.5;
+    }
+    
+    return round($nombre / $precision) * $precision;
 }
 
 // Remplace les caractères du BBCode par des balises html avec ou sans lien pour ne pas buguer les articles, ou juste supprimer les balises

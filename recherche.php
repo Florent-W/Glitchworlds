@@ -23,11 +23,18 @@ if (isset($_GET['categorie'])) { // On regarde où on est pour définir le titre
             $title = $title . "Jeux";
         }
         if(isset($_GET['recherche']) && $_GET['recherche'] != "") { // Si il y a une recherche, on ajoute le mot dans le titre
+             if($_GET['recherche'] == "Pokemon") { // On regarde si il y a un accent
+                $recherche = "Pokémon";
+             }
+             else {
+                 $recherche = $_GET['recherche'];
+             }
+
             if($_GET['categorie_jeu'] != "") {
-                $title = $title . " de " . $_GET['recherche']; // On met un bon titre
+                $title = $title . " de " . $recherche; // On met un bon titre
             }
             else {
-                $title = $title . " " . $_GET['recherche'];
+                $title = $title . " " . $recherche;
             }
         }
     }
@@ -63,7 +70,7 @@ include('Header.php');
                 <div class="form-group" id="categorie_jeu_group" <?php if (isset($_GET['categorie']) && $_GET['categorie'] != "Jeux") { echo "style='display: none;'"; } // Si la catégorie sélectionnée est les jeux, on affiche les categories de jeu ?>>
                     <select class="form-control" id="categorie_jeu" name="categorie_jeu">
                         <!-- Selection catégorie de la recherche (type de jeu) -->
-                        <option value="" <?php if (isset($_GET['categorie_jeu']) and $_GET['categorie_jeu'] == $donnees['nom']) echo 'selected="selected"'; ?>>Tous</option> <!-- options du select pour selectionner tous les jeux -->
+                        <option value="" <?php if (isset($_GET['categorie_jeu']) and isset($donnees['nom']) and $_GET['categorie_jeu'] == $donnees['nom']) echo 'selected="selected"'; ?>>Tous</option> <!-- options du select pour selectionner tous les jeux -->
                         <?php $reponse = $bdd->prepare('SELECT categorie_jeu.nom FROM categorie_jeu ORDER BY categorie_jeu.id');
                         $reponse->execute();
                         while ($donnees = $reponse->fetch()) { ?>
@@ -78,7 +85,7 @@ include('Header.php');
                 <div class="form-group" id="plateforme_group" <?php if (isset($_GET['categorie']) && $_GET['categorie'] != "Jeux") { echo "style='display: none;'"; } // Si la catégorie sélectionnée est les jeux, on affiche les plateformes ?>>
                     <select class="form-control" name="plateforme">
                         <!-- Selection plateforme de la recherche -->
-                        <option value="" <?php if (isset($_GET['plateforme']) and $_GET['plateforme'] == $donnees['nom_plateforme']) echo 'selected="selected"'; ?>>Tous</option> <!-- options du select pour selectionner tous les jeux -->
+                        <option value="" <?php if (isset($_GET['plateforme']) and isset($donnees['nom_plateforme']) and $_GET['plateforme'] == $donnees['nom_plateforme']) echo 'selected="selected"'; ?>>Tous</option> <!-- options du select pour selectionner tous les jeux -->
                         <?php $reponse = $bdd->prepare('SELECT plateformes.nom_plateforme FROM plateformes ORDER BY plateformes.id');
                         $reponse->execute();
                         while ($donnees = $reponse->fetch()) { ?>
@@ -92,14 +99,38 @@ include('Header.php');
             <div class="form-group" id="genre_group" <?php if (isset($_GET['categorie']) && $_GET['categorie'] != "Jeux") { echo "style='display: none;'"; } // Si la catégorie sélectionnée est les jeux, on affiche les categories de jeu ?>>
                 <select class="form-control" name="genre">
                     <!-- Selection des genres de la recherche -->
-                    <option value="" <?php if (isset($_GET['genre']) and $_GET['genre'] == $donnees['genre']) echo 'selected="selected"'; ?>>Tous</option> <!-- options du select pour selectionner tous les jeux -->
+                    <option value="" <?php if (isset($_GET['genre']) and isset($donnees['genre']) and $_GET['genre'] == $donnees['genre']) echo 'selected="selected"'; ?>>Tous</option> <!-- options du select pour selectionner tous les jeux -->
                         <?php $reponse = $bdd->prepare('SELECT genres.genre FROM genres ORDER BY genres.id');
                         $reponse->execute();
                         while ($donnees = $reponse->fetch()) { ?>
                             <option value="<?php echo $donnees['genre']; ?>" <?php if (isset($_GET['genre']) and $_GET['genre'] == $donnees['genre']) echo 'selected="selected"'; ?>><?php echo $donnees['genre']; ?></option> <!-- Les différentes options du select -->
                         <?php }
-                        $reponse->closeCursor(); ?>                </select>
+                        $reponse->closeCursor(); ?>               
+                </select>
             </div>
+
+            <div class="form-group" id="langue_group" <?php if (isset($_GET['categorie']) && $_GET['categorie'] != "Jeux") { echo "style='display: none;'"; } // Si la catégorie sélectionnée est les jeux, on affiche les categories de jeu ?>>
+                <select class="form-control" name="langue">
+                    <!-- Selection des genres de la recherche -->
+                    <option value="" <?php if (isset($_GET['langue']) and isset($donnees['langue']) and $_GET['langue'] == $donnees['langue']) echo 'selected="selected"'; ?>>Tous</option> <!-- options du select pour selectionner tous les jeux -->
+                        <?php $reponse = $bdd->prepare('SELECT langues.langue FROM langues ORDER BY langues.id');
+                        $reponse->execute();
+                        while ($donnees = $reponse->fetch()) { ?>
+                            <option value="<?php echo $donnees['langue']; ?>" <?php if (isset($_GET['langue']) and $_GET['langue'] == $donnees['langue']) echo 'selected="selected"'; ?>><?php echo $donnees['langue']; ?></option> <!-- Les différentes options du select -->
+                        <?php }
+                        $reponse->closeCursor(); ?>               
+                </select>
+            </div>
+
+            <?php if(isset($_SESSION['id'])) { ?>
+            <div class="form-group form-check" id="favoris_group" <?php if (isset($_GET['categorie']) && $_GET['categorie'] != "Jeux") { echo "style='display: none;'"; } // Si la catégorie sélectionnée est les jeux, on affiche les categories de jeu ?>>
+            <select class="form-control" name="favoris" id="favoris">
+                    <!-- Selection de si on cherche que les favoris -->
+                    <option value="" <?php if (empty($_GET['favoris'])) echo 'selected="selected"'; ?>>Tous</option>
+                    <option value="true" <?php if (isset($_GET['favoris']) && $_GET['favoris'] == "true") echo 'selected="selected"'; ?>>Seulement favoris</option>
+                </select>    
+            </div>
+            <?php } ?>
 
             <div class="form-group" id="tri_group">
                 <select class="form-control" name="tri">
@@ -149,13 +180,21 @@ include('Header.php');
                     if(!$('#genre_group').is(":visible")) { // On teste si les éléments sont visible avant
                         $('#genre_group').show();
                     }
+                    if(!$('#langue_group').is(":visible")) { // On teste si les éléments sont visible avant
+                        $('#langue_group').show();
+                    }
                     $('select[name=tri]').append('<option value="note" <?php if (isset($_GET['tri']) && $_GET['tri'] == "note") echo 'selected="selected"'; ?>>Mieux noté</option>'); // On ajoute les options
                     $('select[name=tri]').append('<option value="plus_avis" <?php if (isset($_GET['tri']) && $_GET['tri'] == "plus_avis") echo 'selected="selected"'; ?>>Plus noté</option>');
+                    if(!$('#favoris_group').is(":visible")) { // On teste si les éléments sont visible avant
+                        $('#favoris_group').show();
+                    }
                 }
                 else {
                     $('#categorie_jeu_group').hide();
                     $('#plateforme_group').hide();
                     $('#genre_group').hide();
+                    $('#langue_group').hide();
+                    $('#favoris_group').hide();
                    // $('#tri_group').hide();
 
                     $('select[name=tri] option[value=note]').remove(); // On enlève les options qui ne servent à rien pour les articles

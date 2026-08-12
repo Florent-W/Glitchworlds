@@ -59,9 +59,14 @@ if (!isset($parametre_upload_image)) {
         /* if (!file_exists("images/" . $date . $titre_article . "/" . $type_image)) {
             mkdir("images/" . $date . $titre_article . "/" . $type_image, 0777, true);
         } */
-
-        $nom_image = $jour . "_" . $mois . "_" . $annee . "_" . $heure . "h" . $minute . "m" . $seconde . "_" . $hash . "." . $extension_image; // Nom de l'image final
+        $nom_image = $jour . "_" . $mois . "_" . $annee . "_" . $heure . "h" . $minute . "m" . $seconde . "_";
+        if($_POST['num_image'] > 1) {
+            $nom_image .= $_POST['num_image'] . "_";
+        }
+        $nom_image .= $hash . "." . $extension_image; // Nom de l'image final
         $reponse->closeCursor();
+
+        echo json_encode(array('nom_image' => $nom_image, 'num_image' => $_POST['num_image'])); // On envoie le résultat
     }
 } else if ($parametre_upload_image == "modification") { // On récupère la date depuis l'article, pas besoin de créer d'autre dossier
     $date = $dateArticle;
@@ -79,9 +84,9 @@ if (strtolower(pathinfo($_FILES[$type_image]['name'], PATHINFO_EXTENSION)) == "j
     imagecopyresampled($im_miniature, $im, 0, 0, 0, 0, $largeur_miniature, $hauteur_miniature, $largeur, $hauteur); // Copie de l'image d'origine dans la miniature et redimensionnement
     imagejpeg($im_miniature, $categorie_article . $date . $titre_article . $type_image . '/' . $nom_image, 100); // Création de l'image jpg dans le dossier miniature
 } else if (strtolower(pathinfo($_FILES[$type_image]['name'], PATHINFO_EXTENSION)) == "png") { // On regarde l'extension de l'image pour convertir
-    $im = imagecreatefrompng($_FILES[$type_image]['tmp_name']); // Stockage de la photo qui vient d'être uploadée
+    $im = @imagecreatefrompng($_FILES[$type_image]['tmp_name']); // Stockage de la photo qui vient d'être uploadée
     $im_miniature = imagecreatetruecolor($largeur_miniature, $hauteur_miniature); // Création de la miniature avec une couleur de 24 bits avec une hauteur proportionnelle à celle d'origine
-    $background = imagecolorallocatealpha($im_miniature, 255, 255, 255, 128);
+    $background = imagecolorallocatealpha($im_miniature, 255, 255, 255, 127);
     imagecolortransparent($im_miniature, $background);
     imagealphablending($im_miniature, false);
     imagesavealpha($im_miniature, true);

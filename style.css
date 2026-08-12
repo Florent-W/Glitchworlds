@@ -283,7 +283,7 @@ body,
 .liste-derniers-jeux {
     /* Style de la zone ou sont présents les derniers jeux */
     margin-top: 200px;
-    margin-right: 50px;
+    margin-right: 10px; /* Peut etre à 50 */
     /* Augmente la marge */
     box-shadow: 0 0 0 0.5vh black;
     overflow: hidden;
@@ -358,6 +358,32 @@ body,
     /* Change la couleur du background */
 }
 
+.etoile-non-favori {
+    /* Couleur de l'étoile */
+    color: white;
+    text-shadow: 0 0 1px #000;
+    font-size: 141%;
+    margin-top: 0.285em;
+}
+
+.etoile-non-favori:hover {
+    /* Dans l'étoile, si on passe la souris, il faut la mettre en jaune */
+    color: yellow;
+}
+
+.etoile-favori {
+    /* Couleur de l'étoile */
+    color: yellow;
+    text-shadow: 0 0 1px #000;
+    font-size: 141%;
+    margin-top: 0.285em;
+}
+
+.etoile-favori:hover {
+    /* Dans l'étoile, si on passe la souris, il faut desactiver*/
+    color: white;
+}
+
 .cadre {
 /* Cadre d'info */
 margin-top: 10px !important;
@@ -376,6 +402,14 @@ box-shadow: 0 0 0 0.25vh black;
     /* Contour du background du carousel */
     box-shadow: 0 0 0 0.9vh black;
     /* Dessine les contours autour d'un carousel */
+}
+
+#cc--window {
+    left: 50%;
+        bottom: 0;
+        width: 80%;
+        max-width: 600px;
+        transform: translateX(-50%);
 }
 
 .animation {

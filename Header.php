@@ -51,7 +51,7 @@ if (!isset($_SESSION['pseudo']) and !isset($_SESSION['id']) and !isset($_SESSION
             } else { ?>Glitchworlds | Le site des Glitchs et des Fan Games<?php } ?></title>
 
     <?php if (!isset($meta_description)) { ?>
-        <meta name="description" content="Bienvenue sur Glitchworld ! Le site qui vous permettra de vous renseigner sur les différents Bugs, Glitchs, Fan games, Mods et Rom Hacks !" />
+        <meta name="description" content="Bienvenue sur Glitchworlds ! Le site qui vous permettra de vous renseigner sur les différents Bugs, Glitchs, Fan games, Mods et Rom Hacks !" />
     <?php } else { ?>
         <meta name="description" content="<?php echo $meta_description; ?>" />
     <?php } ?>
@@ -62,7 +62,6 @@ if (!isset($_SESSION['pseudo']) and !isset($_SESSION['id']) and !isset($_SESSION
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js" integrity="sha512-yDlE7vpGDP7o2eftkCiPZ+yuUyEcaBwoJoIhdXv71KZWugFqEphIS3PU60lEkFaz8RxaVsMpSvQxMBaKVwA5xg==" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css" integrity="sha512-ARJR74swou2y0Q2V9k0GbzQ/5vJ2RBSoCWokg4zkfM29Fb3vZEQyv0iWBMW/yvKgyHSR/7D64pFMmU8nYmbRkg==" crossorigin="anonymous" />
-    <script src="https://kit.fontawesome.com/008be5dab2.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" integrity="sha512-UXumZrZNiOwnTcZSHLOfcTs0aos2MzBWHXOHOuB0J/R44QB0dwY5JgfbvljXcklVf65Gc4El6RjZ+lnwd2az2g==" crossorigin="anonymous"></script>
@@ -70,7 +69,6 @@ if (!isset($_SESSION['pseudo']) and !isset($_SESSION['id']) and !isset($_SESSION
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.7.11/jquery.lazy.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.lazy/1.7.11/jquery.lazy.plugins.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.2.0/mustache.min.js" integrity="sha512-CswfmQmJj8DXhm29Qc5eLk5//2EW1CaI6de+RmRhSrWrXRhkBQ3795tuwJvT6DK6EF4IVqJIRmBg8EokL6c87g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.1/howler.min.js" integrity="sha512-L6Z/YtIPQ7eU3BProP34WGU5yIRk7tNHk7vaC2dB1Vy1atz6wl9mCkTPPZ2Rn1qPr+vY2mZ9odZLdGYuaBk7dQ==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mb.YTPlayer/3.3.9/jquery.mb.YTPlayer.min.js" integrity="sha512-rVFx7vXgVV8cmgG7RsZNQ68CNBZ7GL3xTYl6GAVgl3iQiSwtuDjTeE1GESgPSCwkEn/ijFJyslZ1uzbN3smwYg==" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/3.1.0/fullpage.css" integrity="sha512-hGBKkjAVJUXoImyDezOKpzuY4LS1eTvJ4HTC/pbxn47x5zNzGA1vi3vFQhhOehWLTNHdn+2Yqh/IRNPw/8JF/A==" crossorigin="anonymous" />
@@ -80,7 +78,12 @@ if (!isset($_SESSION['pseudo']) and !isset($_SESSION['id']) and !isset($_SESSION
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.mb.YTPlayer/3.3.9/css/jquery.mb.YTPlayer.min.css" integrity="sha512-+HWFHCZZfMe4XQRKS0bOzQ1r4+G2eknhMqP+FhFIkcmWPJlB4uFaIagSIRCKDOZI3IHc0t7z4+N/g2hIaO/JIw==" crossorigin="anonymous" />
     <script data-ad-client="ca-pub-1179428382006278" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
     <!-- <script src="/jquery.typeText.min.js"></script> -->
+    <link href="/dist/css/fontawesome.min.css" rel="stylesheet">
+    <link href="/dist/css/brands.min.css" rel="stylesheet">
+    <link href="/dist/css/solid.min.css" rel="stylesheet">
+    <link href="/dist/css/regular.min.css" rel="stylesheet">
     <script src="/ghost-typer.min.js"></script>
+    <script src="/fonctions_javascript.js"></script>
     <link rel="stylesheet" href="/dist/css/jquery.rating.css" />
     <script src="/dist/js/jquery.rating.js"></script>
     <link rel="stylesheet" href="/dist/css/lightgallery.min.css" />
@@ -146,7 +149,10 @@ if (!isset($_SESSION['pseudo']) and !isset($_SESSION['id']) and !isset($_SESSION
                 },
 
             });
-        });
+        });        
+        
+        
+        
         $(function() {
             // if (page_actuel != "/news.php") {
             $(".player").YTPlayer(); // Si ce n'est pas par section, on charge directement le player
@@ -180,7 +186,7 @@ if (!isset($_SESSION['pseudo']) and !isset($_SESSION['id']) and !isset($_SESSION
     ?>
     <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
         <!-- Barre de navigation -->
-        <a class="navbar-brand" href="/">Glitchworld</a>
+        <a class="navbar-brand" href="/">Glitchworlds</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
             <!-- Bouton pour agrandir si l'appareil est petit -->
             <span class="navbar-toggler-icon"></span>
@@ -212,6 +218,9 @@ if (!isset($_SESSION['pseudo']) and !isset($_SESSION['id']) and !isset($_SESSION
                         <a class="dropdown-item" href="/liste/Jeux/Officiels">Jeux officiels</a>
                         <a class="dropdown-item" href="/liste/Jeux/Rom+hacks">Rom hacks</a>
                         <a class="dropdown-item" href="/liste/Jeux/Fan+games">Fan games</a>
+                        <?php if(isset($_SESSION['id'])) { ?>
+                        <a class="dropdown-item" href="/liste/Jeux/favoris">Mes favoris</a>
+                        <?php } ?>
                     </div>
                 </div>
 
@@ -250,7 +259,7 @@ if (!isset($_SESSION['pseudo']) and !isset($_SESSION['id']) and !isset($_SESSION
                     ?>
             </ul>
             
-            <form class="form-inline my-2 my-lg-0" method="get" action="/recherche.php">
+            <form class="form-inline my-2 my-lg-0" id="form-recherche-header" method="get" action="/recherche.php">
                 <input class="form-control mr-sm-2" type="search" name="recherche" id="recherche" placeholder="Rechercher">
                 <button class="btn btn-outline-success btn-header my-2 my-sm-0" type="submit">Rechercher</button>
             </form>
@@ -284,14 +293,12 @@ if (!isset($_SESSION['pseudo']) and !isset($_SESSION['id']) and !isset($_SESSION
     ?>
 
 </head>
-
 <?php
 include_once('fonctions_php.php');
 ?>
 
-<?php
-include('fonctions_javascript.php');
-?>
+  <!-- <script defer src="/assets/js/cookieconsent.js"></script>
+    <script defer src="/assets/js/cookieconsent-init.js"></script> -->
 <script>
     autoCompletion("recherche", "Tous");
 </script>

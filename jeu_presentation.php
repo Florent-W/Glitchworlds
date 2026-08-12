@@ -1,7 +1,6 @@
 <?php
 include_once('connexion_base_donnee.php');
 include_once('fonctions_php.php');
-include_once('fonctions_javascript.php');
 
 $reponse = $bdd->prepare('SELECT jeu.contenu FROM jeu WHERE jeu.id = :id'); // Récupération du jeu
 $reponse->execute(array('id' => $_POST['id']));
@@ -24,16 +23,18 @@ $donnees = $reponse->fetch();
 </script>
 */
 ?>
+
 <script>
   $('.lazy').Lazy({
     // your configuration goes here
     scrollDirection: 'vertical',
-    effect: "fadeIn",
-    effectTime: 500,
-    // threshold: 0,
-    // visibleOnly: true,
-    // combined: true,
-    // delay: 5000,
+                     effect: "fadeIn",
+                   effectTime: 500,
+                    // threshold: 0,
+                    // visibleOnly: true,
+                    // combined: true,
+                    // delay: 5000,
+    // defaultImage: "/picture.png",
     onError: function(element) {
       console.log('error loading ' + element.data('src'));
     },
@@ -105,7 +106,7 @@ if ($_POST['presentation'] == "section") { ?><script>
   <!-- Auteur de la présentation -->
   <div class="col-md-7 cadre" style="display: flex; align-items: center;">
     <div class="col-md-6">
-      <img src="/utilisateurs/<?php echo htmlspecialchars($_POST['utilisateurs_id']); ?>/photo_profil/<?php echo htmlspecialchars($_POST['nom_photo_profil']); ?>" onerror="this.oneerror=null; this.src='/1.jpg';" class="float-left img-fluid img-thumbnail" style="height: 20vh; width: 15vh;"> <!-- Image à gauche et si image non trouvée, elle est remplacée par une image par défaut, titre à droite -->
+      <img src="/utilisateurs/<?php echo htmlspecialchars($_POST['utilisateurs_id']); ?>/photo_profil/<?php echo htmlspecialchars($_POST['nom_photo_profil']); ?>" onerror="this.oneerror=null; this.src='/1.png';" class="float-left img-fluid img-thumbnail" style="height: 20vh; width: 15vh;"> <!-- Image à gauche et si image non trouvée, elle est remplacée par une image par défaut, titre à droite -->
     </div>
     <div class="text-center col-md-4">
       Ecrit par <em id="auteurPresentation"><?php echo htmlspecialchars($_POST['pseudo']); ?></em></div>
@@ -145,13 +146,15 @@ $reponse->execute(array('id' => $_POST['id']));
 $nbPageSuivante = $reponse->rowCount();
 $donnees = $reponse->fetch();
 
-$pageSuivante = "/jeu" . "/" . $donnees['url'] . '-' . $donnees['id'];
+if(!empty($donnees)) {
+  $pageSuivante = "/jeu" . "/" . $donnees['url'] . '-' . $donnees['id'];
+}
 
-if ($nbPageSuivante > 0) {
+if ($nbPageSuivante > 0 && $pageSuivante) {
     ?>
     <div class='col float-right text-right' style="margin-right: 1.5%;">
     <div class="row justify-content-end">
-   <?php echo "<a href=" . $pageSuivante . " >"; ?><img src="/Jeux/<?php echo $donnees['url']; ?>/miniature/<?php echo $donnees['nom_miniature']; ?>" onerror="this.oneerror=null; this.src='/1.jpg';" class="img-fluid img-news img-thumbnail" style="float:left; height: 200px; background-color:transparent;"></a>
+   <?php echo "<a href=" . $pageSuivante . " >"; ?><img src="/Jeux/<?php echo $donnees['url']; ?>/miniature/<?php echo $donnees['nom_miniature']; ?>" onerror="this.oneerror=null; this.src='/1.png';" class="img-fluid img-news img-thumbnail" style="float:left; height: 200px; background-color:transparent;"></a>
     </div>
     <div class="row justify-content-end">Jeu Suivant ></div>
     <div class="row justify-content-end">
@@ -169,19 +172,34 @@ $reponse->closeCursor();
 // Variable pour le json
 $categorie_jeu = $_POST['categorie_jeu_nom'];
 $plateformes = $_POST['plateformes'];
+$moyenneNoteArrondi = $_POST['moyenne_note_arrondi'];
+$nombreNote = $_POST['nombre_note'];
+
 ?>
 <!-- Balisage JSON-LD généré par l'outil d'aide au balisage de données structurées de Google -->
 <script>
   var json_balisage = document.createElement('script');
   json_balisage.type = 'application/ld+json';
-  json_balisage.text = JSON.stringify({
+  var jsonData = {
     "@context": "http://schema.org",
     "@type": "SoftwareApplication",
     "name": $('#titreJeu').text(),
     "image": $('#imageJeu').attr("src"),
     "applicationCategory": <?php echo json_encode($categorie_jeu); ?>,
-    "operatingSystem": <?php echo json_encode($plateformes); ?>
-  });
+    "operatingSystem": <?php echo $plateformes; ?>,
+  };
+
+    // Vérifier si il y a bien une note et ajouter aggregateRating si nécessaire
+    if (<?php echo $nombreNote; ?> > 0) {
+    jsonData["aggregateRating"] = {
+      "@type": "AggregateRating",
+      "ratingValue": <?php echo json_encode($moyenneNoteArrondi); ?>,
+      "ratingCount": <?php echo json_encode($nombreNote); ?>
+    };
+  }
+
+  json_balisage.text = JSON.stringify(jsonData);
+
   document.querySelector('body').appendChild(json_balisage);
 </script>
 

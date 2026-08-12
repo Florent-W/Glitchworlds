@@ -179,6 +179,40 @@ $dateArticle = ""; // Récupération de la date pour savoir dans quel dossier me
                         <label id="genresIndication" class="text-danger"><?php if ((!empty($_POST['genres']) and ($_POST['genres'] != $donnees2['genres']))) echo "Le genre n'a pas été trouvé"; ?></label> <!-- Indication genre du jeu, il sera indiqué si le formulaire a déjà été soumis mais qu'il y a une erreur -->
                     </div>
 
+                    <script>
+                        autoCompletion("langues", "Langues");
+
+                        var listeTags = tagsCreationArticles('liste_langues', 'lierLangues'); // On récupère les langues du jeu
+                    </script>
+                    <div class="form-group">
+                    <!-- Langues de jeu -->
+                    <label for="langues">Langues (non obligatoire)</label>
+                        <div name="lierLangues" id="lierLangues" style="position: relative; border : 1px solid;">
+                            <?php
+                            if (!empty($_POST['liste_langues'])) { // Servira si il y a une erreur, on split les langues et on les reprend
+                                $liste_langues = $_POST['liste_langues'];
+                                $liste_langues_splitter = explode(',', $liste_langues); // On split les differentes langues
+                            }
+
+                            ?>
+                            <?php
+                            $reponse2 = $bdd->prepare('SELECT langues.langue FROM langues INNER JOIN jeu_lier_langues ON langues.id = jeu_lier_langues.id_langue WHERE jeu_lier_langues.id_jeu = :id_jeu'); // On cherche le nom des langues lié au jeu
+                            $reponse2->execute(array('id_jeu' => $donnees['id']));
+                            $i = 0; // Servira si il y a une erreur pour savoir quel numéro de tags cherché
+
+                            while ($donnees2 = $reponse2->fetch()) {
+                            ?> <span class='badge badge-info tag' style='margin-left: 5px;'><?php if (!empty($_POST['liste_langues'])) echo $liste_langues_splitter[$i];
+                                                                                            else if (!empty($donnees2['langue'])) echo $donnees2['langue']; ?> <i class="far fa-window-close" onclick="$(this).parent().remove()" ;></i></span> <!-- On conserve les valeurs au cas où il y a une erreur dans l'envoi -->
+
+                            <?php $i++;
+                            }
+                            $reponse2->closeCursor();
+                            ?>
+                            <input type="text" name="langues" id="langues" style="border: 0;" class="form-control" style="display: inline-block;">
+                        </div>
+                        <label id="languesIndication" class="text-danger"><?php if ((!empty($_POST['langues']) and ($_POST['langues'] != $donnees2['langue']))) echo "La langue n'a pas été trouvé"; ?></label> <!-- Indication langue du jeu, il sera indiqué si le formulaire a déjà été soumis mais qu'il y a une erreur -->
+                    </div>
+
                     <div class="form-group">
                         <label for="video_background">Vidéo en Arrière plan / URL Youtube (non obligatoire)</label>
                         <input type="text" name="video_background" id="video_background" value="<?php if (!empty($_POST['video_background'])) echo $_POST['video_background'];
@@ -212,6 +246,17 @@ $dateArticle = ""; // Récupération de la date pour savoir dans quel dossier me
                             </div>
                         </div>
                     </div>
+                    <!-- On récupère le statut de l'utilisateur et si le statut de l'utilisateur est suffisant, on approuve le jeu, sinon le jeu est rédigé mais il faudra l'approuver après -->
+                    <div class="form-group">
+                        <label for="jeu_approuver">Etat de la fiche du jeu</label>
+                        <select class="form-control" name="jeu_approuver" id="jeu_approuver" required class="form-control">
+                        <?php if ($_SESSION['statut'] == "Administrateur") { // On affiche l'option pour approuver un article directement que si on est administrateur ?>
+                                <option value="approuver" <?php if ((isset($_POST['jeu_approuver']) and $_POST['jeu_approuver'] == "approuver") || $donnees['approuver'] == "approuver") echo 'selected="selected"'; ?>>Approuver</option> <!-- Les différentes options du select -->
+                                <?php } ?>
+                                <option value="préapprouver" <?php if ((isset($_POST['jeu_approuver']) and $_POST['jeu_approuver'] == "Préapprouver") || $donnees['approuver'] == "Préapprouver") echo 'selected="selected"'; ?>>En attente</option> <!-- Les différentes options du select -->
+                                <option value="brouillon" <?php if ((isset($_POST['jeu_approuver']) and $_POST['jeu_approuver'] == "Brouillon") || $donnees['approuver'] == "Brouillon") echo 'selected="selected"'; ?>>Brouillon</option> <!-- Les différentes options du select -->
+                        </select>
+                    </div>
                     <button type="submit" id="btn_envoi" class="btn btn-success">Envoyer</button>
                     <hr>
                     <div class="form-group">
@@ -240,9 +285,15 @@ $dateArticle = ""; // Récupération de la date pour savoir dans quel dossier me
 </body>
 <?php
 $reponse->closeCursor();
-?>
 
-<?php include('confirmation_suppression_jeu.php'); ?>
+// On regarde si on est dans le traitement, si non, on empêche le changement de page sans alerte
+if(empty($_POST) || (empty($_POST['titre']) && empty($_POST['jeu']) && empty($_POST['data'])) && isset($_SESSION['pseudo'])) {
+    echo '<script>
+    popupChangementDePage(); 
+    </script>';
+}    
+
+include('confirmation_suppression_jeu.php'); ?>
 <?php
 include('footer.php');
 ?>
@@ -262,7 +313,7 @@ include('ajout_section.php');
 include('ajout_video.php');
 ?>
 
-<?php
+<?php 
 if (!empty($_POST['liste_plateformes'])) { // On cherche pour voir si le jeu est lié à des plateformes, si oui on regarde si les plateformes entré correspond à une plateforme sinon on redemande de retaper la plateforme
     $plateforme_trouver = array();
     $id_plateforme_trouver = array();
@@ -303,16 +354,37 @@ if (!empty($_POST['liste_genres'])) { // On cherche pour voir si le jeu est lié
 <?php
     }
 }
+
+if (!empty($_POST['liste_langues'])) { // On cherche pour voir si le jeu est lié à des langues, si oui on regarde si les langues entré correspond à une langue sinon on redemande de retaper la langue
+    $langue_trouver = array();
+    $id_langue_trouver = array();
+
+    ?>
+    <?php
+
+    for ($i = 0; $i < count($liste_langues_splitter); $i++) { // On cherche pour chaque langue son id
+        $reponse = $bdd->prepare('SELECT id FROM langues WHERE langue = :langue');
+        $reponse->execute(array('langue' => $liste_langues_splitter[$i]));
+        $nombre_id_langue_trouver = $reponse->rowCount();
+        array_push($id_langue_trouver, $nombre_id_langue_trouver);
+        $donnees = $reponse->fetch();
+        array_push($langue_trouver, $donnees['id']);
+        $reponse->closeCursor();
+?>
+<?php
+    }
+}         
 ?>
 
-<?php
-if (!empty($_POST['nom']) and !empty($_POST['contenu']) and !empty($_POST['date_sortie']) and !empty($_POST['categorie']) and (empty($_POST['plateformes'])) or (!empty($_POST['plateformes']) and count($id_plateforme_trouver) > 0) and (empty($_POST['genres'])) or (!empty($_POST['genres']) and count($id_genre_trouver) > 0) and !empty($_POST['presentation'])) { // Traitement
+<?php          
+if (!empty($_POST['nom']) and !empty($_POST['contenu']) and !empty($_POST['date_sortie']) and !empty($_POST['categorie']) and (empty($_POST['plateformes'])) or (!empty($_POST['plateformes']) and count($id_plateforme_trouver) > 0) and (empty($_POST['genres'])) or (!empty($_POST['genres']) and count($id_genre_trouver) > 0) and (empty($_POST['liste_langues'])) or (!empty($_POST['liste_langues']) and count($id_langue_trouver) > 0) and !empty($_POST['presentation'])) { // Traitement
     $nom = $_POST['nom'];
     $url = EncodageTitreEnUrl($nom);
     $description = $_POST['description'];
     $contenu = $_POST['contenu'];
     $date_sortie = $_POST['date_sortie'];
     $nom_categorie = $_POST['categorie'];
+    $jeu_approuver = $_POST['jeu_approuver'];
     $presentation = $_POST['presentation'];
     $video_background = $_POST['video_background'];
 
@@ -324,7 +396,6 @@ if (!empty($_POST['nom']) and !empty($_POST['contenu']) and !empty($_POST['date_
     if ($donnees['nom'] != $_POST['nom']) { // Si le nom à changé, on renomme
         rename("Jeux/" . $donnees['jeu_url'], "Jeux/" . $url);
     }
-
     $reponse = $bdd->prepare('SELECT id FROM categorie_jeu WHERE nom = :nom_categorie'); // Selection id catégorie du jeu à l'aide du nom pour l'insérer ensuite
     $reponse->execute(array('nom_categorie' => $nom_categorie));
     $donnees = $reponse->fetch();
@@ -366,34 +437,54 @@ if (!empty($_POST['nom']) and !empty($_POST['contenu']) and !empty($_POST['date_
         $parametre_upload_image = "modification"; // Dit si c'est une modification pour savoir si il faut créer un dossier pour l'image
         include('image_traitement.php');
 
-        $reponse = $bdd->prepare('UPDATE jeu SET nom = :nom, contenu = :contenu, id_categorie = :id_categorie, presentation = :presentation, nom_miniature = :nom_miniature, date_sortie = :date_sortie, url = :url, video_background = :video_background, description = :description WHERE id = :id'); // Modification jeu
-        $reponse->execute(array('nom' => $nom, 'contenu' => $contenu, 'id_categorie' => $id_categorie_jeu, 'presentation' => $presentation, 'nom_miniature' => $nom_miniature, 'date_sortie' => $date_sortie, 'url' => $url, 'id' => $id_jeu, 'video_background' => $video_background, 'description' => $description));
+        $reponse = $bdd->prepare('UPDATE jeu SET nom = :nom, contenu = :contenu, id_categorie = :id_categorie, presentation = :presentation, nom_miniature = :nom_miniature, date_sortie = :date_sortie, url = :url, approuver = :jeu_approuver, video_background = :video_background, description = :description WHERE id = :id'); // Modification jeu
+        $reponse->execute(array('nom' => $nom, 'contenu' => $contenu, 'id_categorie' => $id_categorie_jeu, 'presentation' => $presentation, 'nom_miniature' => $nom_miniature, 'date_sortie' => $date_sortie, 'url' => $url, 'jeu_approuver' => $jeu_approuver, 'id' => $id_jeu, 'video_background' => $video_background, 'description' => $description));
     } else { // Si il n'y a pas de nouvelle miniature
-        $reponse = $bdd->prepare('UPDATE jeu SET nom = :nom, contenu = :contenu, id_categorie = :id_categorie, presentation = :presentation, date_sortie = :date_sortie, url = :url, video_background = :video_background, description = :description WHERE id = :id'); // Modification jeu
-        $reponse->execute(array('nom' => $nom, 'contenu' => $contenu, 'id_categorie' => $id_categorie_jeu, 'presentation' => $presentation,  'date_sortie' => $date_sortie, 'url' => $url, 'id' => $id_jeu, 'video_background' => $video_background, 'description' => $description));
+        $reponse = $bdd->prepare('UPDATE jeu SET nom = :nom, contenu = :contenu, id_categorie = :id_categorie, presentation = :presentation, date_sortie = :date_sortie, url = :url, approuver = :jeu_approuver, video_background = :video_background, description = :description WHERE id = :id'); // Modification jeu
+        $reponse->execute(array('nom' => $nom, 'contenu' => $contenu, 'id_categorie' => $id_categorie_jeu, 'presentation' => $presentation,  'date_sortie' => $date_sortie, 'url' => $url, 'jeu_approuver' => $jeu_approuver, 'id' => $id_jeu, 'video_background' => $video_background, 'description' => $description));
     }
 
     // Traitement plateformes des jeux
     $reponse = $bdd->prepare('DELETE FROM jeu_lier_plateformes WHERE id_jeu = :id_jeu'); // On supprime d'abord les plateformes liés puisqu'ils seront liés après
     $reponse->execute(array('id_jeu' => $id_jeu));
+    $reponse->closeCursor();
 
+if(isset($plateforme_trouver) && count($plateforme_trouver) > 0) {
     for ($i = 0; $i < count($plateforme_trouver); $i++) { // Parcours des différents id des plateformes
         if ($id_plateforme_trouver[$i] == 1) {
             $reponse = $bdd->prepare('INSERT INTO jeu_lier_plateformes (id_jeu, id_plateforme) VALUES (:id_jeu, :id_plateforme) '); // Insertion de la liste des plateformes lié au jeu
             $reponse->execute(array('id_jeu' => $id_jeu, 'id_plateforme' => $plateforme_trouver[$i]));
         }
     }
+}
 
         // Traitement genres des jeux
         $reponse = $bdd->prepare('DELETE FROM jeu_lier_genres WHERE id_jeu = :id_jeu'); // On supprime d'abord les genres liés puisqu'ils seront liés après
         $reponse->execute(array('id_jeu' => $id_jeu));
-    
+        $reponse->closeCursor();
+
+    if(isset($genre_trouver) && count($genre_trouver) > 0) {
         for ($i = 0; $i < count($genre_trouver); $i++) { // Parcours des différents id des genres
             if ($id_genre_trouver[$i] == 1) {
                 $reponse = $bdd->prepare('INSERT INTO jeu_lier_genres (id_jeu, id_genre) VALUES (:id_jeu, :id_genre) '); // Insertion de la liste des genres lié au jeu
                 $reponse->execute(array('id_jeu' => $id_jeu, 'id_genre' => $genre_trouver[$i]));
- }
-}
+                $reponse->closeCursor();
+            }
+        }
+    }
+
+          // Traitement langues des jeux
+          $reponse = $bdd->prepare('DELETE FROM jeu_lier_langues WHERE id_jeu = :id_jeu'); // On supprime d'abord les langues liés puisqu'elles seront liés après
+          $reponse->execute(array('id_jeu' => $id_jeu));
+      
+        if(isset($langue_trouver) && count($langue_trouver) > 0) {
+          for ($i = 0; $i < count($langue_trouver); $i++) { // Parcours des différents id des langues
+              if ($id_langue_trouver[$i] == 1) {
+                  $reponse = $bdd->prepare('INSERT INTO jeu_lier_langues (id_jeu, id_langue) VALUES (:id_jeu, :id_langue)'); // Insertion de la liste des langues lié au jeu
+                  $reponse->execute(array('id_jeu' => $id_jeu, 'id_langue' => $langue_trouver[$i]));
+              }
+            }  
+        }
 
 ?>
     <script>
@@ -402,7 +493,6 @@ if (!empty($_POST['nom']) and !empty($_POST['contenu']) and !empty($_POST['date_
     </script>
 <?php
     // header('Location: index.php'); // Redirection vers la page d'accueil
-
 } else {
 }
 ?>

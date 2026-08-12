@@ -1,7 +1,81 @@
 <?php
 $title = "Inscription";
 include('Header.php');
+
+$errors = array(); // Tableau pour stocker les messages d'erreur
+
+if (!empty($_POST['nom']) and !empty($_POST['mdp']) and !empty($_POST['mail']) and !empty($_FILES['photo_profil']['tmp_name'])) {
+    $pseudo = $_POST['nom'];
+    $mdp = password_hash($_POST['mdp'], PASSWORD_DEFAULT); // Hash du mot de passe
+    $mail = $_POST['mail'];
+    $statut = "Membre";
+    $nom_photo_profil_avant_conversion = $_FILES['photo_profil']['name']; // Pour obtenir le nom final du fichier image, on utilise l'id du membre ainsi que l'extension de l'image
+
+    $reponse = $bdd->prepare('SELECT COUNT(pseudo) as NbPseudo FROM utilisateurs WHERE pseudo = :pseudo'); // On cherche le nombre de pseudo sous le meme nom pour voir si il est déjà pris
+    $reponse->execute(array('pseudo' => $pseudo));
+    $donnees = $reponse->fetch();
+    $reponse->closeCursor();
+
+    if ($donnees['NbPseudo'] == 0) { // Si le pseudo est disponible
+        // Gestion de l'image
+        $allowed_extensions = array('jpg', 'jpeg', 'png', 'bmp', 'gif');
+
+        // Vérifiez si le fichier est une image valide
+        $image_info = getimagesize($_FILES['photo_profil']['tmp_name']);
+        if ($image_info === false) {
+            $errors[] = "Le fichier n'est pas une image valide.";
+        } else {
+            $extension = strtolower(pathinfo($_FILES['photo_profil']['name'], PATHINFO_EXTENSION));
+            if (!in_array($extension, $allowed_extensions)) {
+                $errors[] = "L'extension de fichier n'est pas autorisée. Utilisez une image JPG, JPEG, PNG, BMP ou GIF.";
+            } else {
+                // Limitez la taille de l'image téléchargée (ex : 2 Mo)
+                $max_file_size = 2 * 1024 * 1024; // 2 Mo
+                if ($_FILES['photo_profil']['size'] > $max_file_size) {
+                    $errors[] = "La taille du fichier est trop grande. Veuillez choisir une image plus petite.";
+                } else {
+                    // Tout est valide, continuez avec l'upload de l'image
+                    $reponse = $bdd->prepare('INSERT INTO utilisateurs (pseudo, mdp, mail, statut, activer_video_background, activer_son_video_background) VALUES (:pseudo, :mdp, :mail, :statut, "true", "false")'); // Insertion utilisateur
+                    $reponse->execute(array('pseudo' =>  $pseudo, 'mdp' => $mdp, 'mail' => $mail, 'statut' => $statut));
+
+                    $idUtilisateur = $bdd->lastInsertId();
+
+                    $reponse = $bdd->prepare('UPDATE utilisateurs SET nom_photo_profil = :nom_photo_profil WHERE id = :idUtilisateur'); // Mise à jour de l'utilisateur avec nom de l'image de profil
+                    $reponse->execute(array('nom_photo_profil' => $idUtilisateur . '.' . $extension, 'idUtilisateur' => $idUtilisateur));
+
+                    if (!file_exists("utilisateurs/" . $idUtilisateur)) {
+                        mkdir("utilisateurs/" . $idUtilisateur, 0777, true); // On créé les dossiers pour l'utiilisateur
+                        mkdir("utilisateurs/" . $idUtilisateur . "/photo_profil", 0777, true);
+                        mkdir("utilisateurs/" . $idUtilisateur . "/background_site", 0777, true);
+                    }
+
+                    $upload_folder = 'utilisateurs/' . $idUtilisateur . '/photo_profil/';
+                    // Déplacer le fichier image vers le dossier de destination
+                    $upload_path = $upload_folder . $idUtilisateur . '.' . $extension;
+                    if (move_uploaded_file($_FILES['photo_profil']['tmp_name'], $upload_path)) {
+                        $_SESSION['pseudo'] = $pseudo; // Variable de session, connexion
+                        $_SESSION['id'] = $idUtilisateur;
+                        $_SESSION['statut'] = $statut;
+                        header("Location: /index.php"); // Redirection vers une nouvelle URL
+                        exit;
+                    } else {
+                        $errors[] = "Erreur lors de l'upload de l'image.";
+                    }
+                }
+            }
+        }
+    } else {
+        $errors[] = "Le pseudo à déjà été pris. Veuillez en choisir un autre.";
+    }
+}
 ?>
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- Mettez ici vos balises meta, title, CSS, etc. -->
+</head>
 
 <body class="background">
     <div class="container container-bordure animation fadeRight bg-white">
@@ -39,96 +113,19 @@ include('Header.php');
                 </div>
                 <button type="submit" id="btn_envoi" class="btn btn-success">Envoyer</button>
                 <hr>
+                <?php
+            if (!empty($errors)) {
+                foreach ($errors as $error) {
+                    echo '<div class="alert alert-danger" role="alert" style="margin-bottom: 10px; margin-top: 10px;">' . $error . '</div>';
+                }
+            }
+            ?>
                 <div class="form-group">
                     <a href="/connexion.php">Se connecter</a>
                 </div>
             </form>
         </div>
     </div>
-
-    <?php
-    if (!empty($_POST['nom']) and !empty($_POST['mdp']) and !empty($_POST['mail']) and !empty($_FILES['photo_profil']['tmp_name'])) {
-        $pseudo = $_POST['nom'];
-        $mdp = password_hash($_POST['mdp'], PASSWORD_DEFAULT); // Hash du mot de passe
-        $mail = $_POST['mail'];
-        $statut = "Membre";
-        $nom_photo_profil_avant_conversion = $_FILES['photo_profil']['name']; // Pour obtenir le nom final du fichier image, on utilise l'id du membre ainsi que l'extension de l'image
-    ?>
-
-        <?php
-        $reponse = $bdd->prepare('SELECT COUNT(pseudo) as NbPseudo FROM utilisateurs WHERE pseudo = :pseudo'); // On cherche le nombre de pseudo sous le meme nom pour voir si il est déjà pris
-        $reponse->execute(array('pseudo' => $pseudo));
-        $donnees = $reponse->fetch();
-        $reponse->closeCursor();
-
-        if ($donnees['NbPseudo'] == 0) { // Si le pseudo est disponible
-            $reponse = $bdd->prepare('INSERT INTO utilisateurs (pseudo, mdp, mail, statut, activer_video_background, activer_son_video_background) VALUES (:pseudo, :mdp, :mail, :statut, "true", "false")'); // Insertion utilisateur
-            $reponse->execute(array('pseudo' =>  $pseudo, 'mdp' => $mdp, 'mail' => $mail, 'statut' => $statut));
-
-            $idUtilisateur = $bdd->lastInsertId();
-
-            $reponse = $bdd->prepare('UPDATE utilisateurs SET nom_photo_profil = :nom_photo_profil WHERE id = :idUtilisateur'); // Mise à jour de l'utilisateur avec nom de l'image de profil
-            $reponse->execute(array('nom_photo_profil' => $idUtilisateur . '.' . pathinfo($_FILES['photo_profil']['name'], PATHINFO_EXTENSION), 'idUtilisateur' => $idUtilisateur));
-
-            if (!file_exists("utilisateurs/" . $idUtilisateur)) {
-                mkdir("utilisateurs/" . $idUtilisateur, 0777, true); // On créé les dossiers pour l'utiilisateur
-                mkdir("utilisateurs/" . $idUtilisateur . "/photo_profil", 0777, true);
-                mkdir("utilisateurs/" . $idUtilisateur . "/background_site", 0777, true);
-            }
-
-            // Redimensionnement de l'image
-            $tailleImage = getimagesize($_FILES['photo_profil']['tmp_name']); // Récupération taille de l'image uploadée
-            $largeur = $tailleImage[0];
-            $hauteur = $tailleImage[1];
-            $largeur_miniature = 300; // Largeur de la future image
-            $hauteur_miniature = $hauteur / $largeur * 300;
-
-            if (strtolower(pathinfo($_FILES['photo_profil']['name'], PATHINFO_EXTENSION)) == "jpg") { // On regarde l'extension de l'image pour convertir
-                $im = imagecreatefromjpeg($_FILES['photo_profil']['tmp_name']); // Stockage de la photo qui vient d'être uploadée
-                $im_miniature = imagecreatetruecolor($largeur_miniature, $hauteur_miniature); // Création de la miniature avec une couleur de 24 bits avec une hauteur proportionnelle à celle d'origine
-                imagecopyresampled($im_miniature, $im, 0, 0, 0, 0, $largeur_miniature, $hauteur_miniature, $largeur, $hauteur); // Copie de l'image d'origine dans la miniature et redimensionnement
-                imagejpeg($im_miniature, 'utilisateurs/' . $idUtilisateur . '/photo_profil/' . $idUtilisateur . '.jpg', 100); // Création de l'image jpg dans le dossier photo_profil
-            } else if (strtolower(pathinfo($_FILES['photo_profil']['name'], PATHINFO_EXTENSION)) == "png") { // On regarde l'extension de l'image pour convertir
-                $im = imagecreatefromstring(file_get_contents($_FILES['photo_profil']['tmp_name'])); // Stockage de la photo qui vient d'être uploadée
-                $im_miniature = imagecreatetruecolor($largeur_miniature, $hauteur_miniature); // Création de la miniature avec une couleur de 24 bits avec une hauteur proportionnelle à celle d'origine
-                $background = imagecolorallocatealpha($im_miniature, 255, 255, 255, 128); // Gestion de la transparence
-                imagecolortransparent($im_miniature, $background);
-                imagealphablending($im_miniature, false);
-                imagesavealpha($im_miniature, true);
-                imagecopyresampled($im_miniature, $im, 0, 0, 0, 0, $largeur_miniature, $hauteur_miniature, $largeur, $hauteur); // Copie de l'image d'origine dans la miniature et redimensionnement
-                imagepng($im_miniature, 'utilisateurs/' . $idUtilisateur . '/photo_profil/' . $idUtilisateur . '.png'); // Création de l'image png dans le dossier photo_profil
-                imagedestroy($im);
-            } else if (strtolower(pathinfo($_FILES['photo_profil']['name'], PATHINFO_EXTENSION)) == "bmp") { // On regarde l'extension de l'image pour convertir (elle est d'abord récupérée et convertit en minuscule pour pouvoir comparer quand les extensions sont en en majuscules),
-                $im = imagecreatefrombmp($_FILES['photo_profil']['tmp_name']); // Stockage de la photo qui vient d'être uploadée
-                $im_miniature = imagecreatetruecolor($largeur_miniature, $hauteur_miniature); // Création de la miniature avec une couleur de 24 bits avec une hauteur proportionnelle à celle d'origine
-                imagecopyresampled($im_miniature, $im, 0, 0, 0, 0, $largeur_miniature, $hauteur_miniature, $largeur, $hauteur); // Copie de l'image d'origine dans la miniature et redimensionnement
-                imagebmp($im_miniature, 'utilisateurs' . '/' . $_FILES['photo_profil']['name'], 100); // Création de l'image bmp dans le dossier photo_profil
-            } else if (strtolower(pathinfo($_FILES['photo_profil']['name'], PATHINFO_EXTENSION)) == "gif") { // On regarde l'extension de l'image pour convertir
-                move_uploaded_file($_FILES['photo_profil']['tmp_name'], 'utilisateurs/' . $idUtilisateur . '/photo_profil'); // Bouge l'image sans la redimensionner, il faudra faire en sorte qu'elle ne dépasse pas une taille
-            }
-
-            $_SESSION['pseudo'] = $pseudo; // Variable de session, connexion
-            $_SESSION['id'] = $idUtilisateur;
-            $_SESSION['statut'] = $statut;
-        ?>
-            <script>
-                document.location.href = '/index.php'; // Redirection nouvelle url
-            </script>
-        <?php
-            // mail($mail, "Bienvenue à Glitchworld !", "Bienvenue à Glitchworld !");
-        } else {
-        ?>
-            <script>
-                messageErreur = '<div class="alert alert-warning" role="alert" style="margin-bottom: 10px; margin-top: 10px;">Le pseudo à déjà été pris. Veuillez en choisir un autre.</div>';
-                $('#btn_envoi').after(messageErreur);
-            </script><?php
-                    }
-                }
-                        ?>
-    <?php
-    include('footer.php');
-    ?>
-
 </body>
 
 </html>

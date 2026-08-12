@@ -3,8 +3,8 @@ header('Content-type: application/json');
 
 include_once('connexion_base_donnee.php');
 
-if ($_POST['categorieRecherche'] != "Articles" && $_POST['categorieRecherche'] != "Plateformes" && $_POST['categorieRecherche'] != "Genres") {
-    $reponse = $bdd->prepare('SELECT jeu.nom, jeu.url, jeu.id, jeu.nom_miniature FROM jeu WHERE nom LIKE :recherche'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
+if ($_POST['categorieRecherche'] != "Articles" && $_POST['categorieRecherche'] != "Plateformes" && $_POST['categorieRecherche'] != "Genres" && $_POST['categorieRecherche'] != "Langues") {
+    $reponse = $bdd->prepare('SELECT jeu.nom, jeu.url, jeu.id, jeu.nom_miniature FROM jeu WHERE nom LIKE :recherche AND jeu.approuver = "approuver"'); // Sélection des jeux et formatage de la date à partir de la page de jeu selectionnée
     $reponse->bindValue('recherche', '%' . $_POST['recherche'] . '%', PDO::PARAM_STR);
     $reponse->execute();
     $resultats = array(); // Création d'un tableau
@@ -14,7 +14,7 @@ if ($_POST['categorieRecherche'] != "Articles" && $_POST['categorieRecherche'] !
     $reponse->closeCursor();
 }
 
-if ($_POST['categorieRecherche'] != "Jeux" && $_POST['categorieRecherche'] != "Plateformes" && $_POST['categorieRecherche'] != "Genres") { // Si on est sur la page de création de news, on a besoin que des jeux
+if ($_POST['categorieRecherche'] != "Jeux" && $_POST['categorieRecherche'] != "Plateformes" && $_POST['categorieRecherche'] != "Genres" && $_POST['categorieRecherche'] != "Langues") { // Si on est sur la page de création de news, on a besoin que des jeux
     $reponse = $bdd->prepare('SELECT article.titre, article.url, DATE_FORMAT(date_creation, "%Y/%M/%d/%kh%i") AS date_article_dossier, article.id, article.nom_miniature FROM article WHERE titre LIKE :recherche AND article.approuver = "Approuver"'); // Sélection des articles et formatage de la date à partir de la page de jeu selectionnée
     $reponse->bindValue('recherche', '%' . $_POST['recherche'] . '%', PDO::PARAM_STR);
     $reponse->execute();
@@ -40,6 +40,16 @@ if ($_POST['categorieRecherche'] == "Genres") {
     $reponse->execute();
     while ($donnees = $reponse->fetch()) {
         $resultats[] = array("value" => $donnees['genre'], "id" => $donnees['id'], "image" => $donnees['nom_image'], "category" => "Genres");
+    }
+    $reponse->closeCursor();
+}
+
+if ($_POST['categorieRecherche'] == "Langues") {
+    $reponse = $bdd->prepare('SELECT langues.id, langues.langue, langues.nom_image FROM langues WHERE langue LIKE :recherche'); // Sélection des langues
+    $reponse->bindValue('recherche', '%' . $_POST['recherche'] . '%', PDO::PARAM_STR);
+    $reponse->execute();
+    while ($donnees = $reponse->fetch()) {
+        $resultats[] = array("value" => $donnees['langue'], "id" => $donnees['id'], "image" => $donnees['nom_image'], "category" => "Langues");
     }
     $reponse->closeCursor();
 }

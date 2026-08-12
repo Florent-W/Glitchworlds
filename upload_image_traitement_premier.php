@@ -3,12 +3,10 @@
     include_once('connexion_base_donnee.php');
     
     $ancien_nom_image = $_POST['ancien_nom'];
-    // $nom_image = $_FILES['images']['name'];
     $nom_image = $_POST['nom_image'];
-    // $fichier = $_POST['file'];
     $extension_image = strtolower(pathinfo($nom_image, PATHINFO_EXTENSION));
     $date_actuel = $_POST['date_actuel'];
-   // $dateActuel = date("Y-m-d H:i:s");
+
     // On récupère les variables
     $jour = $_POST['jour'];
     $mois = $_POST['mois'];
@@ -44,25 +42,6 @@
         $largeur_miniature = $largeur;        
         $hauteur_miniature  = $hauteur;
     }
-
-    /*
-    if ($_POST['tailleImage'] == "icone") { // Si l'utilisateur à choisi une taille d'image, on choisi parmi les tailles d'image disponible
-        $largeur_miniature = 75;
-        $hauteur_miniature = ($hauteur / $largeur * 300) / 4;
-    } else if ($_POST['tailleImage'] == "petite") {
-        $largeur_miniature = 300;
-        $hauteur_miniature = $hauteur / $largeur * 300;
-    } else if ($_POST['tailleImage'] == "moyenne") {
-        $largeur_miniature = 600;
-        $hauteur_miniature = ($hauteur / $largeur * 300) * 2;
-    } else if ($_POST['tailleImage'] == "grande") {
-        $largeur_miniature = 1200;
-        $hauteur_miniature = ($hauteur / $largeur * 300) * 4;
-    } else {
-        $largeur_miniature = 300; // Largeur de la future miniature
-        $hauteur_miniature = $hauteur / $largeur * 300;
-    }
-    */
 
     $type_image = 'images'; // Recupère le nom de l'image (formulaire) pour indiquer quel type de fichier on va récupérer, miniature
     include('image_traitement.php');

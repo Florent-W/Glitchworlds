@@ -44,7 +44,7 @@ $reponse->closeCursor();
                 </div>
                 <div class="form-group">
                     <label for="photo_profil_actuel">Photo de profil actuelle</label>
-                    <img src="/utilisateurs/<?php echo htmlspecialchars($donnees['id']); ?>/photo_profil/<?php echo $donnees['nom_photo_profil'] ?>" onerror="this.oneerror=null; this.src='/1.jpg';" name="photo_profil_actuel" id="photo_profil_actuel" class="img-fluid img-thumbnail form-control" style="height: 10vh; width: 10vh;"> <!-- Image à gauche et si image non trouvée, elle est remplacée par une image par défaut -->
+                    <img src="/utilisateurs/<?php echo htmlspecialchars($donnees['id']); ?>/photo_profil/<?php echo $donnees['nom_photo_profil'] ?>" onerror="this.oneerror=null; this.src='/1.png';" name="photo_profil_actuel" id="photo_profil_actuel" class="img-fluid img-thumbnail form-control" style="height: 10vh; width: 10vh;"> <!-- Image à gauche et si image non trouvée, elle est remplacée par une image par défaut -->
                 </div>
                 <div class="form-group">
                     <label for="photo_profil">Modifier la photo de profil (non obligatoire)</label>

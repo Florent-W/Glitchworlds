@@ -2,10 +2,18 @@
 
 class BddConnexionClass
 {
+    /*
     private $serveur = 'mysql:host=db5000315646.hosting-data.io';
     private $db = 'dbname=dbs308204';
     private $user = 'dbu566316';
     private $mdp = '96pvBbDE8DUyw@N';
+    private $pdo;
+    */
+    
+    private $serveur = 'mysql:host=localhost:3306';
+    private $db = 'dbname=glitchworld';
+    private $user = 'root';
+    private $mdp = 'root';
     private $pdo;
 
     public function __construct()

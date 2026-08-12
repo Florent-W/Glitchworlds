@@ -1,4 +1,20 @@
 <!-- A mettre dans la vue -->
+ <!-- Balisage JSON-LD généré par l'outil d'aide au balisage de données structurées de Google -->
+ <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "url": "https://www.glitchworlds.com/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.glitchworlds.com/recherche.php/recherche={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+</script>
 
 <body>
     <div class="view carousel-view d-none d-lg-block"> <!-- style="background-image: url('https://images.unsplash.com/photo-1563625236407-04ec2b4539d0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjExMDk0fQ&auto=format&fit=crop&w=1916&q=80'); background-repeat: no-repeat; background-size: cover; background-position: center center;"> -->
@@ -64,7 +80,6 @@
             </div>
         </div>
     </div>
-
     <?php
     include('liste_news.php');
     ?>

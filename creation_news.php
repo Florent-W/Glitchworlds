@@ -21,6 +21,10 @@ include('Header.php');
                         <label for="description">Description de 150 caractères max (non obligatoire)</label>
                         <input type="text" maxlenght="150" name="description" id="description" value="<?php if (!empty($_POST['description'])) echo $_POST['description']; ?>" class="form-control"> <!-- On conserve les valeurs au cas où il y a une erreur dans l'envoi -->
                     </div>
+                    <div class="form-group" id="template_group">
+                        <label for="template">Template</label>
+                        <button type="button" class="btn btn-outline-secondary btn_jeu" name="template" id="template" value="T" data-toggle="tooltip" data-placement="top" title="Glitch" onclick="ajoutTexteFormulaireTemplate('Glitch')">Glitch</button>
+                    </div>
                     <div class="form-group">
                         <label for="contenu">Contenu</label>
                         <div class="row" style="margin-bottom:10px;">
@@ -42,6 +46,10 @@ include('Header.php');
                         <hr>
                         <div name="previsualisationContenu" id="previsualisationContenu" style="white-space: pre-wrap;"></div>
                     </div>
+                    <script>
+                        montrerMenuTemplate();
+                    </script>                                                                                                                                                                                 
+                            
                     <div class="form-group">
                         <label for="categorie">Catégorie</label>
                         <select class="form-control" name="categorie" id="categorie" required onchange="controleTexteInput(this, 'categorieIndication', 'categorie')" class="form-control">
@@ -154,15 +162,19 @@ include('Header.php');
             </form>
         </div>
     </div>
-    <script>
+    <?php
+   // On regarde si on est dans le traitement, si non, on empêche le changement de page sans alerte
+    if((empty($_POST) || (empty($_POST['titre']) && empty($_POST['jeu']) && empty($_POST['data']))) && isset($_SESSION['pseudo'])) {
+        echo '<script>
+        popupChangementDePage(); 
+        </script>';
+    }    
         //  $('#contenu').on('change', function() { // On met le contenu dans la prévisualisation
         //    $('#previsualisationContenu').empty();
         //   contenuTexteHtml = remplacerBaliseParBBCodePrevisualisation($('#contenu').val());
         //   $('#previsualisationContenu').append(contenuTexteHtml); // On replace le contenu dans la prévisualisation
         // });
-    </script>
-
-    <?php
+   
     include('footer.php');
     ?>
     <?php
@@ -269,7 +281,7 @@ include('Header.php');
         $reponse->execute(array('titre' => $titre, 'contenu' => $contenu, 'categorie' => $categorie, 'presentation' => $presentation, 'nom_miniature' => $nom_miniature, 'date_creation' => date("Y-m-d H:i:s"), 'url' => $url, 'id_auteur' => $_POST['auteur'], 'article_approuver' => $article_approuver, 'nom_banniere' => $nom_banniere, 'description' => $description));
         $id_article = $bdd->lastInsertId(); // On récupère l'id de l'article pour la liste des jeux lié à l'article
 
-        for ($i = 0; $i < count($jeu_trouver); $i++) { // Parcours des différents id des tags
+        for ($i = 0; $i < count((array)$jeu_trouver); $i++) { // Parcours des différents id des tags
             if ($id_jeu_trouver[$i] == 1) {
                 $reponse = $bdd->prepare('INSERT INTO article_lier_jeu (id_article, id_jeu) VALUES (:id_article, :id_jeu)'); // Insertion de la liste des jeux lié à l'article
                 $reponse->execute(array('id_article' => $id_article, 'id_jeu' => $jeu_trouver[$i]));

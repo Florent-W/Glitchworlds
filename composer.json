@@ -1,5 +1,14 @@
 {
-  "require": {
-      "mustache/mustache": "v2.14.0"
-  }
+    "require-dev": {
+        "php-parallel-lint/php-parallel-lint": "^1.3",
+        "php-parallel-lint/php-console-highlighter": "^1.0",
+        "squizlabs/php_codesniffer":"^3.7",
+        "phpcompatibility/php-compatibility":"^9.3",
+        "mustache/mustache": "^2.14"
+      },
+      "prefer-stable" : true,
+      "scripts": {
+        "post-install-cmd": "\"vendor/bin/phpcs\" --config-set installed_paths vendor/phpcompatibility/php-compatibility",
+        "post-update-cmd" : "\"vendor/bin/phpcs\" --config-set installed_paths vendor/phpcompatibility/php-compatibility"
+      }
 }
